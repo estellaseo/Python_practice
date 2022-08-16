@@ -330,7 +330,7 @@ a2.strip()            # 양쪽 공백 제거
 a2.lstrip()           # 왼쪽 공백 제거
 a2.rstrip()           # 오른쪽 공백 제거
 
-a1.lstrip('a')        # 문자열 'a' 제거
+a2.lstrip('a')        # 문자열 'a' 제거
 
 
 # 5. 치환
