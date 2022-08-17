@@ -9,20 +9,17 @@
 #  1000  :   6장
 # 나머지  :   2원
 
-import math
-
-total = input('금액을 입력하세요. ')
-total = int(total)
-c50 = math.trunc(total/50000)
-c10 = math.trunc((total - c50 * 50000)/10000)
-c5 = math.trunc((total - c50 * 50000 - c10 * 10000)/5000)
-c1 = math.trunc((total - c50 * 50000 - c10 * 10000 - c5 * 5000)/1000)
+total = int(input('금액을 입력하세요. '))
+c50 = total//50000
+c10 = (total - c50 * 50000)//10000
+c5 = (total - c50 * 50000 - c10 * 10000)//5000
+c1 = (total - c50 * 50000 - c10 * 10000 - c5 * 5000)//1000
 c0 = total - c50 * 50000 - c10 * 10000 - c5 * 5000 - c1 * 1000
-print('오만 원 : ', c50, '장')
-print('만 원 : ', c10, '장')
-print('오천 원 : ', c5, '장')
-print('천 원 : ', c1, '장')
-print('나머지 : ', c0, '원')
+print('오만 원 : %d장' % c50)
+print('만 원 : %d장' % c10)
+print('오천 원 : %d장' % c5)
+print('천 원 : %d장' % c1)
+print('나머지 : %d원' % c0)
 
 
 
@@ -35,9 +32,10 @@ print('나머지 : ', c0, '원')
 vemail = input('이메일 주소를 입력하세요 : ')
 vid = vemail.split('@')
 vengine = vid[1].split('.')[0]
-print('아이디 : ', vid[0])
-print('메일엔진 : ', vengine)
-print('홈페이지 : ', 'http://itwill.com/'+vid[0])
+
+print('아이디 :', vid[0])
+print('메일엔진 :', vengine)
+print('홈페이지 :', 'http://itwill.com/'+vid[0])
 
 
 
