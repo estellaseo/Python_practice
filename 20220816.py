@@ -345,8 +345,59 @@ a3.split('#')         # 지정 문자열로 리스트 분리
 
 
 # 7. 위치 확인 
-a3.find('#')          # 처음 발견된 문자열 위치 리턴(n번째 발견된, etc. 불가)
+a3.find('#')          # 처음 발견된 문자열 위치값 리턴(n번째 발견된, etc. 불가)
 a3.find('#', 2)       # 위치 확인 시작 위치 조정 가능
+
+
+# 8. 개수
+'ababaaa'.count('a')
+
+
+# 9. 형 확인
+a1 = '100'
+a2 = 'abcde1'
+a3 = 'abcde'
+a4 = 100
+
+a2.isalnum()          # 숫자 또는 문자 구성 여부
+a2.isalpha()          # string type but only 문자 구성 여부
+a1.isnumeric()        # string type but only 숫자 구성 여부
+
+a4.isnumeric()
+# 속성 에러 > AttributeError: 'int' object has no attribute 'isnumeric'
+# 사용불가(숫자 객체에는 isnumeric method 존재하지 않음)
+
+
+# 10. 문자열 결합 / 반복
+'a' + 'b'
+'a' * 10
+
+
+# 11. 포맷 변경(출력 형식)
+'%02d' % 3            # 빈 자리 0으로 채워짐
+'%02s' % '3'          # 빈 자리 공백으로 채워짐
+
+
+# 12. 지정 문자 포함 여부 확인
+a3 = 'a#b#c#d' 
+a3.find('.')          # 값이 존재하지 않을 경우 -1 리턴
+a3.count('.')         # 값이 존재하지 않을 경우 0 리턴
+
+'#' in a3             # True
+'.' in a3             # False
+
+[1, 2] in [1, [1, 2], 3, 4, 5]         # True
+[1, 2] in [1, 2, 3, 4, 5]              # False
+
+# [ 참고 ] 언어별 in 연산자 비교
+# where ename in ('SMITH', 'ALLEN')    in SQL
+# ename %in% c('SMITH', 'ALLEN')       in R
+# ename.isin(['SMITH', 'ALLEN'])       in Python
+
+
+# 13. 문자열 길이
+len([1, 2, 3, 4, 5])  # 리스트: 원소의 개수
+len('abcd')           # 문자열: 길이
 
 
 
