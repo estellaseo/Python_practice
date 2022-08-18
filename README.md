@@ -4,9 +4,20 @@
 ----
 
 #### 2022.08.16
-- data structures
-- list
-- string methods
+- Data Structures
+- List
+- String Methods
 <br/>
 
 #### 2022.08.17
+- Logical Operator
+- User Defined Function
+- map, apply, applymap
+- For / While Loops
+- Conditions(if)
+- np.where function
+<br/>
+
+#### 2022.08.18
+- Data Frame
+- Change working directory
