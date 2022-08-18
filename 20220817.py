@@ -55,7 +55,7 @@ f2 = lambda x : x.upper()
 f2('abcd')
 
 # 예시 3) 두 수를 입력받아 두 수의 합 리턴
-f3 = lambda x, y : x + y잘
+f3 = lambda x, y : x + y
 f3(3, 4)
 f3??                                     # 코드 확인
 
