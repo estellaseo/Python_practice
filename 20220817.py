@@ -43,6 +43,8 @@ l2[0].upper()                            # 문자열 적용 가능
 # 1) 축약형
 #    간단한 함수 정의에 용이 > 단순 리턴의 경우
 function_name = lambda input_value : return_value
+#    제한적 if문 지원 > else 생략 불가, elif 사용 불가
+function_name = lambda input_value : True if condition else False
 
 # 예시 1) 숫자를 입력받아 10을 더한 값 리턴
 f1 = lambda x : x + 10
@@ -53,7 +55,7 @@ f2 = lambda x : x.upper()
 f2('abcd')
 
 # 예시 3) 두 수를 입력받아 두 수의 합 리턴
-f3 = lambda x, y : x + y
+f3 = lambda x, y : x + y잘
 f3(3, 4)
 f3??                                     # 코드 확인
 
@@ -62,11 +64,55 @@ f3??                                     # 코드 확인
 f4 = lambda x = 0, y : x + y             # y 디폴트 생략 불가
 f4 = lambda x = 0, y = 0 : x + y         # 정상 작동
 
+# 예시 5) 주민번호를 이용한 성별 출력
+jumin = ['8812111223928','8905042323343','90050612343432']
+f4 = lambda x : '남' if x[6] == '1' else '여'
+list(map(f4, jumin))
+
 
 # 2) 기본형
+#    보다 복잡한 프로그래밍 처리 가능
+#    return 객체 정의 필요
 def function_name(input_value) :
     body
     return return_value
+
+# 예시 1) 숫자를 입력받아 10을 더한 값 리턴
+def f1(x) : 
+    return x + 10
+f1(100)
+
+
+
+# [ 연습 문제 ]
+# student.csv 파일을 읽고 과체중 여부 출력
+std = pd.read_csv('data/student.csv', encoding = 'cp949')
+
+# 1) map
+vweight = []
+def f_weight(x, y) :
+    if x > (y - 100) * 0.9 :
+        vweight = '과체중'
+    elif x < (y - 100) * 0.9 :
+        vweight = '저체중'
+    else :
+        vweight = '표준체중'
+    return vweight
+
+list(map(f_weight, std['WEIGHT'], std['HEIGHT']))
+
+
+# 2) for
+vtotal = []
+for i, j in zip(std['HEIGHT'], std['WEIGHT']) :
+    if j > (i - 100) * 0.9 :
+        vtotal.append('과체중')
+    elif j < (i - 100) * 0.9 :
+        vtotal.append('저체중')
+    else :
+        vtotal.append('표준체중')
+
+std['BMI'] = vtotal                     #컬럼 추가
 
 
 
@@ -76,6 +122,7 @@ def function_name(input_value) :
 # =============================================================================
 # 1. 1차원 원소별 적용(in R : sapply, mapply)
 #    - map 함수: 적용 객체 제한 X (리스트, 1차원 배열, 시리즈)
+#               함수 먼저 나열 > 다중 fetch 가능
 l1 = ['1,200', '1,300', '1,400']
 
 f1 = lambda x : int(x.replace(',', ''))
@@ -84,6 +131,7 @@ list(map(f1, l1))                        # 결과 확인을 위한 list 선언
 
 
 #    - map 메서드: 시리즈만 가능
+#                 객체 먼저 나열 > 다중 fetch 불가
 
 # 2. 2차원 행별 / 열별 적용(in R : apply)
 #    - apply 메서드: 데이터프레임만 가능
@@ -270,4 +318,54 @@ for i in range(0, len(vsal)) :
         new_sal.append(round(vsal[i] * 1.12))
         
         
+
+
+# =============================================================================
+# np.where 함수
+# =============================================================================
+# - R의 ifelse 함수와 유사
+# - np.where 중복 사용으로 다중 분기 가능
+
+import numpy as np
+np.where(condition, True, False)
+
+l1 = [1, 3, 10, 8, 6]
+np.where(Series(l1) > 5, 'A', 'B')
+
+
+
+# [ 연습 문제 ]
+# emp.csv 파일을 읽고 부서별 연봉 증가율에 따른 새 급여 출력
+# 10번 부서: 10%, 20번 부서: 11%, 그 외 12%
+emp = pd.read_csv('data/emp.csv')
+emp.dtypes
+
+# 1) for문
+new_sal = []
+for i, j in zip(emp['DEPTNO'], emp['SAL']) :
+    if i == 10 :
+        new_sal.append(round(j * 1.1))
+    elif i == 20 :
+        new_sal.append(round(j * 1.11))
+    else :
+        new_sal.append(round(j * 1.12))
+
+
+# 2) map
+def new_sal(x, y) :
+    if x == 10 :
+        new_sal = round(y * 1.1)
+    elif x == 20 :
+        new_sal = round(y * 1.11)
+    else :
+        new_sal = round(y * 1.12)
+    return new_sal
+
+list(map(new_sal, emp['DEPTNO'], emp['SAL']))
+
+
+# 3) np.where
+np.where(emp['DEPTNO'] == 10, round(emp['SAL'] * 1.1),
+         np.where(emp['DEPTNO'] == 20, round(emp['SAL'] * 1.11),
+                  round(emp['SAL'] * 1.12)))
 
