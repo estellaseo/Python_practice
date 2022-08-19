@@ -21,3 +21,19 @@
 #### 2022.08.18
 - Data Frame
 - Change working directory
+- continue, break, exit, pass
+- Tuple
+- Dictionary
+- Sets
+<br/>
+
+#### 2022.08.19
+- List Comprehension
+- Deep Copy, Shallow Copy
+- Array
+- broadcast
+- np.isnan / pd.isnull
+- astype function
+<br/>
+
+
