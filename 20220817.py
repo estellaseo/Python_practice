@@ -121,25 +121,39 @@ std['BMI'] = vtotal                     #컬럼 추가
 # 적용 함수
 # =============================================================================
 # 1. 1차원 원소별 적용(in R : sapply, mapply)
-#    - map 함수: 적용 객체 제한 X (리스트, 1차원 배열, 시리즈)
-#               함수 먼저 나열 > 다중 fetch 가능
+# 1) map 함수
+#    - 적용 객체 제한 X (리스트, 1차원 배열, 시리즈)
+#    - 함수 먼저 나열 > 다중 fetch 가능
 l1 = ['1,200', '1,300', '1,400']
 
 f1 = lambda x : int(x.replace(',', ''))
 list(map(f1, l1))                        # 결과 확인을 위한 list 선언
 
 
+# 2) map 메서드
+#    - 적용 객체 제한(시리즈만 가능)
+#    - 객체 먼저 나열 > 다중 fetch 불가
+stud = pd.read_csv('data/student.csv', encoding = 'cp949')
 
-#    - map 메서드: 시리즈만 가능
-#                 객체 먼저 나열 > 다중 fetch 불가
+stud['NAME'].map(lambda x : x.startswith('김'))
+
 
 # 2. 2차원 행별 / 열별 적용(in R : apply)
 #    - apply 메서드: 데이터프레임만 가능
-#    - axis로 방향 결정
+#    - axis로 방향 결정(0: 행별/세로 방향, 1: 열별/가로 방향)
+a1 = np.arange(1, 17).reshape(4, 4)
+
+a1.sum(axis = 0)
+DataFrame(a1).apply(sum, axis = 0)
+
 
 # 3. 2차원 원소별 적용(in R : apply - margin : c(1,2))
-#    - if statement, string methods > scalar에만 적용 가능한 경우
 #    - applymap 메서드: 데이터프레임만 가능
+#    - if statement, string methods > scalar에만 적용 가능한 경우
+df1 = DataFrame(np.array(['a;b', 'c;d', 'e;f', 'g;h']).reshape(2, 2))
+f1 = lambda x : x.split(';')[1]
+df1.applymap(f1)
+
 
 
 # [ 연습 문제 ]
