@@ -190,6 +190,26 @@ list(map(f6, l4, l5))
 
 
 
+# [ 연습 문제 ]
+# card_history.csv 파일을 읽고
+card = pd.read_csv('data/card_history.csv', encoding = 'cp949')
+
+# index / data cleasing
+card.index = card['NUM']
+f_int = lambda x : int(x.replace(',', ''))
+card = card.iloc[:, 1:] 
+card = card.applymap(f_int)
+
+# 1) 일자별 지출 총액
+card.sum(axis = 1)
+card.apply(sum, axis = 1)
+
+# 2) 지출 항목별 지출 평균
+card.mean(axis = 0)
+card.apply('mean', axis = 0)
+
+
+
 
 # =============================================================================
 # 반복문
