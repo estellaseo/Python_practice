@@ -194,7 +194,8 @@ df1.columns = list('abcd'.upper())
 df1 = df1.set_index('A')                 # 본문에 있는 컬럼을 지정하여 index로 설정
 
 df1.index.name                           # index 이름 전달
-df.columns.name                          # column 이름 전달
+df1.columns.name                         # column 이름 전달
+df1.columns.name = None                  # column 이름 삭제
 
 
 
