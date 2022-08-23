@@ -47,7 +47,7 @@ s3.reindex(['A', 'B', 'O', 'C', 'F'],
 s3[0]                                    # positional indexing
 s3[0:2]                                  # slice indexing
 s3[['A', 'B']]                           # label indexing
-s3[s3 > 3]                                 #h
+s3[s3 > 3]                               
 s3[['A', 'B', 'O']]                      # error - "['O'] not in index"
 
 
@@ -240,10 +240,3 @@ np.where(con1, True, False)
 
 
 
-# [ 연습 문제 ]
-# student.csv 파일과 exam_01.csv 파일을 읽고 각 학생의 시험 성적을 TOTAL 컬럼으로 추가
-stud = pd.read_csv('data/student.csv', encoding = 'cp949')
-exam = pd.read_csv('data/exam_01.csv', encoding = 'cp949')
-
-f_total = lambda x : exam.loc[exam['STUDNO'] == x, 'TOTAL'].iloc[0]
-stud['TOTAL'] = list(map(f_total, stud['STUDNO']))
