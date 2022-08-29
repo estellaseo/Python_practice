@@ -41,6 +41,25 @@ std = pd.read_sql(vsql1, con = con1)
 test = pd.read_sql(vsql2, con = con2)
 
 
+# 새로운 conn 생성 방법(다기종 DB 지원 방식)
+# pip install SQLAlchemy
+import sqlalchemy
+from sqlalchemy import types, create_engine
+conn = create_engine('oracle+cx_oracle://scott:oracle@localhost:1521/ORCL')
+std = pd.read_sql(vsql1, con = conn)
+
+
+# 파이썬 객체를 DB에 쓰기
+conn = create_engine('oracle+cx_oracle://scott:oracle@localhost:1521/ORCL')
+
+df_total.to_sql(name = ,             # DB에 저장할 테이블명(소문자)
+                con = ,              # connection
+                if_exists = 'fail'   # 테이블명이 존재할때 액션(replace, append)
+                index = True)        # 인덱스도 DB에 저장할 지 여부
+
+df1.to_sql('abc', con = conn, index = False)
+
+
 
 # =============================================================================
 # shift
@@ -54,10 +73,10 @@ s1.shift(periods = 1,             # 가져올 값의 위치(이전 값 가져오
          axis = 0                 # 방향
          fill_value = )           # NA 대신 리턴 값
 
-s1.shift()
+s1.shift()                        # 이전값 가져오기
 s1.shift(-1)                      # 이후값 가져오기
 s1.shift(2)                       # 이전 * 2 값 가졍
-s1.shift(2, fill_valu = 0)
+s1.shift(2, fill_valu = 0)        # NA 0으로 리턴
 
 
 df1 = DataFrame(np.arange(1, 10).reshape(3, 3))
@@ -90,7 +109,7 @@ s1.duplicated()                   # 중복 여부 확인 가능
 s1[s1.duplicated()]               # 중복값 확인
 s1[~s1.duplicated()]              # 중복값 제거한 unique value(Series)
 
-s1.drop_duplicates(subset,        # 특정 그룹(부분집합)이 중복될 경우 ㅈ)
+s1.drop_duplicates(subset,        # 특정 그룹(부분집합)이 중복될 경우 삭제)
                    keep,
                    inplace, 
                    ignore_index)
@@ -99,10 +118,12 @@ s1.drop_duplicates(subset,        # 특정 그룹(부분집합)이 중복될 경
 df2 = DataFrame({'A' : [1, 2, 3, 4], 'B' : [2, 2, 5, 6], 'C' : [3, 3, 7, 8]})
 df3 = DataFrame({'A' : [1, 2, 3, 4], 'B' : [2, 2, 5, 6], 'C' : [3, 3, 7, 8]})
 
-df3.drop_duplicates()             # 모든 컬럼의 값이 같은 행을 제거(첫버ㄴ=)
+df3.drop_duplicates()             # 모든 컬럼의 값이 같은 행을 제거(첫번째 행 유지)
 df3.drop_duplicates(keep = 'last')# 두번째 행 남음
 df3.drop_duplicates(ignore_index = True)  # index 초기화
 
+df2.drop_duplicates()             # 제거 X(첫번째 컬럼값이 다르므로)
+df2.drop_duplicates(['B','C'])    # 제거 됨(두번째, 세번째 컬럼값이 같을 경우 삭제)
 
 
 
