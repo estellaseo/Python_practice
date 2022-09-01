@@ -69,6 +69,8 @@ pd.merge(df3_mean, df3_con, on = ['상품명', '판매가격'])
 # rank 이용
 df3_mean.loc[df3_mean.groupby('상품명')['판매가격'].rank(method = 'min') == 1, :]
 
-# [ 참고 ] index
+# [ 참고 ] indexing
 # 색인으로 전달할 수 있는 객체의 형태 : 리스트, 1차원 배열, 시리즈
 # 예시 ) 출력이 데이터프레임일 경우 컬럼 선택을 통해 차원 축소(시리즈)
+
+
