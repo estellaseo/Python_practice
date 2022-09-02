@@ -82,6 +82,6 @@
 - string method
 <br/>
 
-#### 2022.09.01
+#### 2022.09.02
 - Regular expression
 
