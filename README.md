@@ -1,5 +1,5 @@
 # Python Summary Repository
-##### _Updated 2022.08_
+##### _Updated 2022.09_
 
 ----
 
@@ -36,4 +36,52 @@
 - astype function
 <br/>
 
+#### 2022.08.22
+- Series
+- DataFrame
+- replace
+- index, columns.name
+- drop
+<br/>
+
+#### 2022.08.23
+- rename
+- fillna
+- sort_index, sort_values
+- merge
+- sqldf module
+<br/>
+
+#### 2022.08.24
+- groupby
+- rank
+<br/>
+
+#### 2022.08.25
+- Multi-Level Index
+<br/>
+
+#### 2022.08.29
+- DB connect
+- shift
+- unique/duplicated
+<br/>
+
+#### 2022.08.30
+- union/intersection/difference
+- concat
+- strftime/strptime
+<br/>
+
+#### 2022.08.31
+- stack/unstack
+- pivot_table
+<br/>
+
+#### 2022.09.01
+- string method
+<br/>
+
+#### 2022.09.01
+- Regular expression
 
