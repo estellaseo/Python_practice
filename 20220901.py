@@ -191,13 +191,12 @@ df1 = df1.drop(['교습소주소', '분야구분', '교습계열'], axis = 1)
 
 # 1) 구별 교습과정별 교습소별 연도별 총 합 출력
 df1 = df1.groupby(['구', '교습과정', '교습소명']).sum()
-df1 = df1.stack().reset_index()
-df1 = df1.rename({'level_3':'년도', 0:'매출'}, axis = 1)
-df1.groupby(['구', '교습과정', '교습소명', '년도'], as_index = False)['매출'].sum()
+df2 = df1.groupby(axis = 1, level = 0).sum().groupby(['구', '교습과정', 
+                                                      '교습소명']).sum()
 
 
 # 2) 구별 교습과정별 가장 인기있는 교습소명 출력
-df1_sum = df1.groupby(['구', '교습과정', '교습소명'])['매출'].sum()
+df1_sum = df2.sum(axis = 1)
 df1_sum[df1_sum.groupby(['구', '교습과정']).idxmax()]
 
 
