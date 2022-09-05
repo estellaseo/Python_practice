@@ -231,3 +231,4 @@ re.search(r2, vstr).group(0)                    # 0: 전체 문자열
 re.search(r2, vstr).group(1)                    # 1: 첫번째 그룹
 re.search(r2, vstr).group(2)                    # 2: 두번째 그룹
 re.search(r2, vstr).group(3)                    # 3: 세번째 그룹 
+ 
