@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 run my_profile
 
+
 # 1. shoppingmall.txt 파일을 읽고
 df1 = pd.read_csv('data/shoppingmall.txt', encoding = 'cp949', sep = '|', header = None)
 
@@ -25,6 +26,16 @@ vname = df1.iloc[vidx+1, 0].reset_index(drop = True)
 
 DataFrame({'NAME':vname, 'HPAGE':vhtml})
 
+# 다른 형태로 파일 불러온 뒤 처리
+c1 = open('data/shoppingmall.txt')
+vlist = c1.readlines()
+c1.close()
+
+vstr = Series(vlist).str.cat()
+r1 = re.compile('([0-9]{1, 2})\.[ \n]+(.+)\n')
+r1.findall(vstr)
+
+
 
 
 # 2. oracle_alert_testdb.log 파일을 읽고
@@ -37,10 +48,12 @@ df2 = pd.read_csv('data/oracle_alert_testdb.log', sep = '|', header = None)
 
 'ORA-1109 signalled during: ALTER DATABASE CLOSE NORMAL...'
 
-import re
-r1 = re.compile('(ORA\-[0-9]+)([signalled :.+] .+)')
+
+r1 = re.compile('ORA\-([0-9]+)([signalled :.+] .+)')
 vre = df2.iloc[:, 0].str.findall(r1).str[0].dropna()
 
 vcode = vre.str[0].str.strip()
 verror = vre.str[1].str[2:].str.strip()
 DataFrame({'CODE':vcode, 'ERROR':verror})
+
+
