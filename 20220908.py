@@ -52,7 +52,7 @@ mglearn.plots.plot_2d_separator(m_svm,  # 결정경계를 갖는 모델명
 # 4. 3차원 데이터로 변경 후 시각화
 #    기존에 가지고 있는 설명변수를 변경하여 새로운 파생변수 유도
 
-X[:, 1 ]**2                      # 두번째 설명변수의 제곱
+X[:, 1 ]**2                      # 두번째 설명변수의 제곱 > 커널 트릭
 X_new = pd.concat([DataFrame(X), DataFrame(X[:, 1]**2)], axis = 1).values
 
 # [ 참고 ]
@@ -190,3 +190,196 @@ ax[2].scatter(test_x_sc2[:, 0], test_x_sc2[:, 1],
 ax[2].legend()
 ax[2].set_title('잘못된 스케일링 산점도') 
 # > 데이터가 기존의 특성을 그대로 유지한다고 보기 어려움
+
+
+
+
+# 예제) iris 꽃 분류(svm)
+# 1. 데이터 로딩
+from sklearn.datasets import load_iris
+iris = load_iris()
+
+iris_x = iris['data']
+iris_y = iris['target']
+
+
+# 2. 변수 스케일링
+from sklearn.svm import SVR
+
+from sklearn.preprocessing import StandardScaler as standard
+from sklearn.preprocessing import MinMaxScaler as minmax
+
+m_sc = minmax()
+m_sc.fit(iris_x)
+iris_x_sc = m_sc.transform(iris_x)
+
+iris_x_sc.min(axis = 0)          # 스케일링 후 최솟값 (0)
+iris_x_sc.max(axis = 0)          # 스케일링 후 최댓값 (1)
+
+
+# 3. 데이터 분리
+from sklearn.model_selection import train_test_split
+train_sc_x, test_sc_x, train_y, test_y = train_test_split(iris_x_sc, iris_y,
+                                                                 random_state = 0)
+
+# 4. 모델링
+from sklearn.svm import SVC
+m_svm = SVC()
+m_svm.fit(train_sc_x, train_y)
+
+m_svm.score(train_sc_x, train_y) # 0.9642857142857143
+m_svm.score(test_sc_x, test_y)   # 0.9736842105263158
+
+
+# 5. 매개변수(하이퍼 파라미터) 튜닝
+# 1) C
+#    - 슬랙변수(오분류 데이터와 결정경계의 마진을 표현하는 변수)의 조절값
+#    - 오분류 데이터포인트에 주는 가중치(클수록 복잡한 경계)
+#    - 비선형성 강화 요인
+
+# 2) gamma
+#    - 고차원으로의 매핑 정도를 나타내는 변수
+#    - 고차원 정도 강화 요인(클수록 복잡한 경계)
+#    - 결정경계 인근에 있는 데이터포인트 가중치 부여
+#    - gamma 값이 클수록 보다 결정경계와 가까운 데이터포인트에 집중 
+
+v_C = [0.001, 0.01, 0.1, 1, 10, 100, 10000]
+v_gamma = [0.001, 0.01, 0.1, 1, 10, 100, 10000]
+
+# case 1) best score, best parameter 확인
+best_score = 0
+for i in v_C:
+    for j in v_gamma:
+        m_svm = SVC(C = i, gamma = j)
+        m_svm.fit(train_sc_x, train_y)
+        vscore_te = m_svm.score(test_sc_x, test_y)
+        
+        if vscore_te > best_score : 
+            best_params = {'C': i, 'gamma':j}
+            best_score = vscore_te
+            
+# 결과
+best_score                       # 0.9736842105263158
+best_params                      # {'C': 0.1, 'gamma': 10}
+
+
+# case 2) 모든 파라미터 변화에 따른 예측점수 확인
+vscore_tr = []; vscore_te = []; v_i = []; v_j = []
+for i in v_C:
+    for j in v_gamma:
+        m_svm = SVC(C = i, gamma = j)
+        m_svm.fit(train_sc_x, train_y)
+        v_i.append(i)
+        v_j.append(j)
+        vscore_tr.append(m_svm.score(train_sc_x, train_y))
+        vscore_te.append(m_svm.score(test_sc_x, test_y))
+
+# C, gamma 변화에 따른 점수 변화 plot 시각화
+import matplotlib.pyplot as plt
+plt.plot(vscore_tr, c = 'r', label = 'vscore_tr')
+plt.plot(vscore_te, c = 'b', label = 'vscore_te')
+plt.legend()
+
+# C, gamma 변화에 따른 점수 변화 데이터프레임화
+DataFrame({'C':v_i, 'gamma':v_j, 'tr_score':vscore_tr, 'te_score':vscore_te})
+
+# C, gamma 변화에 따른 점수 변화 heatmap 시각화
+from mglearn.tools import heatmap
+heatmap(values = ,                            # 표현할 2차원 array
+        xlabel = ,                            # x축 이름
+        ylabel = ,                            # y축 이름
+        xticklabels = ,                       # x축 눈금
+        yticklabels = ,                       # y축 눈금
+        cmap)                                 # 팔레트
+
+plt.summer()                                  # 현 세션의 기본 컬러맵 변경
+ascore_te = np.array(vscore_te).reshape(7, 7) # 행 우선순위로 배열 완성
+heatmap(ascore_te, 'gamma', 'C', v_C, v_gamma, 'Pastel2_r')
+
+# [ 참고 ] 팔레트 확인 방법
+plt.colormaps()
+
+# 6. 최종모델 만들기
+m_svm = SVC(C = 0.1, gamma = 10)
+m_svm.fit(train_sc_x, train_y)
+
+m_svm.predict()
+
+
+# 예제) cancer data를 사용한 종양 양성/악성 분류 SVM
+from sklearn.datasets import load_breast_cancer
+cancer = load_breast_cancer()
+
+cancer_x = cancer['data']
+cancer_y = cancer['target']
+cancer_x_df = DataFrame(cancer_x, columns = cancer['feature_names'])
+
+
+# 1. DT/RF를 사용한 변수 중요도 확인(top 2)
+m_dt = dt_c()
+m_dt.fit(cancer_x, cancer_y)
+
+s1 = Series(m_dt.feature_importances_, index = cancer['feature_names'])
+s1.sort_values(ascending = False).index[:2]
+
+
+# 2. 위 두 변수를 이용한 2차원 산점도 시각화
+import mglearn
+cancer_x_df2 = cancer_x_df[['worst radius', 'worst concave points']]
+mglearn.discrete_scatter(cancer_x_df2.iloc[:,0], 
+                         cancer_x_df2.iloc[:,1], 
+                         cancer_y)
+plt.xlabel('worst radius')
+plt.ylabel('worst concave points')
+
+
+# 3. 위 두 변수를 이용한 SVM 모델(선형) 적용
+from sklearn.svm import LinearSVC
+m_svm = LinearSVC()
+m_svm.fit(cancer_x_df2, cancer_y)
+mglearn.plots.plot_2d_separator(m_svm, cancer_x_df2) 
+
+
+# 4. 적용 결과 시각화
+m_sc = minmax()
+cancer_x_df2_sc = m_sc.fit_transform(cancer_x_df2)
+
+m_svm = LinearSVC()
+m_svm.fit(cancer_x_df2_sc, cancer_y)
+mglearn.discrete_scatter(cancer_x_df2_sc[:,0], cancer_x_df2_sc[:,1], cancer_y)
+
+mglearn.plots.plot_2d_separator(m_svm, cancer_x_df2_sc)    
+plt.ylim(cancer_x_df2_sc[:,1].min() - 0.1, cancer_x_df2_sc.max() + 0.1)
+
+
+
+
+# [ SVM 용어 정리 ]
+# - 결정경계 : 데이터를 분류하는 분류 선 or 평면
+# - 초평면 : 다차원일때의 분류 경계를 나타내는 평면
+# - Support Vector : 결정경계에 인접한 데이터포인트
+# - 마진 : 결정경계로부터의 거리(마진을 최대화하는 분류경계 생성)
+# - 슬랙 변수 : 오분류된 데이터의 오차를 표현하는 방식
+#              선형 분리가 불가능할 경우 개별적인 오차를 허용하여 결정경계 생성
+#              슬랙변수 = 0 > 선형으로 완벽하게 분리됨
+# - 커널(Kernel) : 주어진 데이터를 고차원 공간으로 매핑시켜주는 함수
+#                 ex) 제곱변환, 시그모이드변환
+
+
+
+
+# [ 장점 ]
+# - 예측력이 강함
+# - 저차원 데이터로도 좋은 예측 결과 리턴
+
+# [ 단점]
+# - 연산 비용이 높음
+# - 큰 데이터에 적합하지 않음
+# - 분석과 해석이 어려움
+# - 변수의 스케일에 영향을 많이 받음
+# - 결측치, 이상치에 매우 민감
+# - 연속형 설명변수로만 구성됐을 때 가장 효과적
+
+
+
+
