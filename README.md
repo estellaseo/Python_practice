@@ -84,4 +84,28 @@
 
 #### 2022.09.02
 - Regular expression
+- findall, search, match
+<br/>
+
+#### 2022.09.05
+- file open-fetch-close
+<br/>
+
+#### 2022.09.06
+- Decision Tree Model
+<br/>
+
+#### 2022.09.07
+- Impurity
+- Random Forest
+<br/>
+
+#### 2022.09.08
+- Support Vector Machine
+- Scaling
+<br/>
+
+#### 2022.09.14
+- Data Pre-processing
+- PCA
 
