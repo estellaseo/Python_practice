@@ -133,8 +133,16 @@ m_pca = PCA(2)
 m_pca.fit(iris_x_sc)                    # 가중치 추정
 m_pca.components_                       # 추정된 가중치
 
-C1 = 0.52106591*X1 -0.26934744*X2 + ...
-X1 = iris_x_sc[:, 0]..
+# C1 = 0.52106591*X1 -0.26934744*X2 + 0.5804131*X3 + 0.56485654*X4
+# C2 = 0.37741762*X1 +0.92329566*X2 + 0.02449161*X3 + 0.06694199*X4
+
+X1 = iris_x_sc[:,0]
+X2 = iris_x_sc[:,1]
+X3 = iris_x_sc[:,2]
+X4 = iris_x_sc[:,3]
+
+0.52106591*X1 -0.26934744*X2 + 0.5804131*X3 + 0.56485654*X4
+0.37741762*X1 +0.92329566*X2 + 0.02449161*X3 + 0.06694199*X4
 
 m_pca.transform(iris_x_sc)              # 추정된 가중치를 이용한 변수 변환
 iris_x_sc_pca2 = m_pca.fit_transform(iris_x_sc) # fit과 transform 동시에 진행
@@ -146,9 +154,7 @@ m_pca.explained_variance_ratio_.sum()   # 총 분산 설명력(95.81%)
 
 # 4. 시각화
 import mglearn
-mglearn.discrete_scatter(iris_x_sc_pca2[:, 0],
-                         iris_x_sc_pca2[:, 1],
-                         iris_y)
+mglearn.discrete_scatter(iris_x_sc_pca2[:, 0], iris_x_sc_pca2[:, 1], iris_y)
 
 
 # SVM 모델 적용
