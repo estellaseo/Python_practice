@@ -113,21 +113,21 @@ run my_profile
 
 
 
-# 예시) iris data 차원 축소 - 2차원 공간 시각화
-# 1. 데이터 불러오기
+# 예시) iris data PCA 차원 축소 - 2차원 공간 시각화
+# 1) 데이터 불러오기
 from sklearn.datasets import load_iris
 iris = load_iris()
 iris_x = iris['data']
 iris_y = iris['target']
 
 
-# 2. 스케일링
+# 2) 스케일링
 from sklearn.preprocessing import StandardScaler as standard
 m_sc = standard()
 iris_x_sc = m_sc.fit_transform(iris_x)
 
 
-# 3. PCA 적용
+# 3) PCA 적용
 from sklearn.decomposition import PCA
 m_pca = PCA(2)
 m_pca.fit(iris_x_sc)                    # 가중치 추정
@@ -152,7 +152,7 @@ m_pca.explained_variance_ratio_         # 분산 설명력(비율)
 m_pca.explained_variance_ratio_.sum()   # 총 분산 설명력(95.81%)
 
 
-# 4. 시각화
+# 4) 시각화
 import mglearn
 mglearn.discrete_scatter(iris_x_sc_pca2[:, 0], iris_x_sc_pca2[:, 1], iris_y)
 
@@ -173,7 +173,7 @@ m_svm.score(iris_x_te, iris_y_te)       # 0.9210526315789473
 # [ 연습 문제 ]
 # iris data를 2개 클래스를 갖는 데이터로 변경 후(setosa 제외)
 # PCA + SVM 모델의 2차원 결정경계 시각화
-# 1. 데이터 불러오기
+# 1) 데이터 불러오기
 from sklearn.datasets import load_iris
 iris = load_iris()
 iris_x = iris['data']
@@ -183,19 +183,19 @@ iris_x = iris_x[iris_y != 0, :]
 iris_y = iris_y[iris_y != 0]
 
 
-# 2. 스케일링
+# 2) 스케일링
 from sklearn.preprocessing import StandardScaler as standard
 m_sc = standard()
 iris_x_sc = m_sc.fit_transform(iris_x)
 
 
-# 3. PCA 적용
+# 3) PCA 적용
 from sklearn.decomposition import PCA
 m_pca = PCA(2)
 iris_x_sc_pca2 = m_pca.fit_transform(iris_x_sc)
 
 
-# 4. SVM 모델 적용 및 시각화
+# 4) SVM 모델 적용 및 시각화
 from sklearn.svm import SVC
 import mglearn
 
@@ -204,5 +204,151 @@ m_svm.fit(iris_x_sc_pca2, iris_y)
 
 mglearn.discrete_scatter(iris_x_sc_pca2[:, 0], iris_x_sc_pca2[:, 1], iris_y)
 mglearn.plots.plot_2d_separator(m_svm, iris_x_sc_pca2) 
+
+
+
+
+# 2. 다차원 척도법(Multidimensional Scaling : MDS)
+#    - 개체간 유사성, 비유사성을 거리로 측정하여 점으로 표현
+#    - stress : 기존 데이터포인트의 거리 총합과 유도된 인공변수 거리 총합의 차이
+#    - stress의 크기로 차원 축소에 대한 적합도 판단
+#    - 유도된 인공변수가 많을수록 stress는 줄어듦
+
+
+
+# 예시) iris data MDS 차원 축소 - 2차원 공간 시각화
+# 1) 데이터 로딩
+from sklearn.datasets import load_iris
+iris = load_iris()
+iris_x = iris['data']
+iris_y = iris['target']
+
+
+# 2) scaling
+from sklearn.preprocessing import StandardScaler as standard
+m_sc = standard()
+iris_x_sc = m_sc.fit_transform(iris_x)
+
+
+# 3) MDS 적용
+from sklearn.manifold import MDS
+m_mds = MDS(2)
+iris_x_mds = m_mds.fit_transform(iris_x_sc)
+
+m_mds.stress_                           # 235.85967496623616(절대적 기준 X)
+
+# elbow point를 확인하여 적절한 인공변수 수 확인 필요
+vstress =[]
+for i in range(1, 5) :
+    m_mds = MDS(n_components=i, random_state=0)
+    m_mds.fit(iris_x_sc)
+    vstress.append(m_mds.stress_)
+
+import matplotlib.pyplot as plt
+plt.plot([1, 2, 3, 4], vstress)
+
+     
+# 4) kruskal stress 계산
+#    - s1 stress, s2 stress
+#    - s1 stress를 보다 일반적으로 사용
+#    - s1^2 형태로 평가 및 해석
+#    - s1^2 = sum((DA - DE)**2) / sum(DA**2)
+#    - s1 = sqrt(sum((DA - DE)**2) / sum(DA**2))
+#           DA : Distance Actual 변환 전 실제 거리
+#           DE : Distance Expects 변환 후 거리
+from sklearn.metrics import euclidean_distances
+DA = euclidean_distances(iris_x)
+DE = euclidean_distances(iris_x_mds)
+
+np.sum((DA - DE)**2) / np.sum(DA**2)    # 0.034495928321654476
+
+# kruskal stress 평가
+# < 0.025 : 완벽
+# < 0.05  : 매우 좋음
+# < 0.1   : 좋음
+# < 0.2   : 보통
+# > 0.2   : 나쁨
+
+
+# 5) 시각화(산점도)
+import mglearn
+mglearn.discrete_scatter(iris_x_mds[:,0], iris_x_mds[:,1], iris_y)
+
+
+
+
+# [ 연습 문제 ] cancer data를 이용한 MDS 차원 축소
+# 1) 데이터 로딩
+from sklearn.datasets import load_breast_cancer
+cancer = load_breast_cancer()
+
+cancer_x = cancer['data']
+cancer_y = cancer['target']
+
+
+# 2) scaling
+from sklearn.preprocessing import StandardScaler as standard
+m_st = standard()
+cancer_x_sc = m_st.fit_transform(cancer_x)
+
+
+# 3) MDS 적용
+from sklearn.manifold import MDS
+m_mds = MDS(2)
+cancer_x_mds = m_mds.fit_transform(cancer_x_sc)
+
+vstress =[]
+for i in range(1, 31) :
+    m_mds = MDS(n_components=i, random_state=0)
+    m_mds.fit(cancer_x_sc)
+    vstress.append(m_mds.stress_)
+    
+plt.plot(np.arange(1, 31), vstress)
+
+
+# 1) 2차원 시각화
+import mglearn
+mglearn.discrete_scatter(cancer_x_mds[:,0], cancer_x_mds[:,1], cancer_y)
+
+
+# 2) 3차원 시각화
+from mpl_toolkits.mplot3d import Axes3D, axes3d
+
+m_mds3 = MDS(3)
+cancer_x_mds3 = m_mds3.fit_transform(cancer_x_sc)
+
+fig = plt.figure()
+ax = Axes3D(fig)
+
+ax.scatter(cancer_x_mds3[cancer_y == 0, 0], 
+           cancer_x_mds3[cancer_y == 0, 1], 
+           cancer_x_mds3[cancer_y == 0, 2],    
+           c = 'b',             
+           cmap = mglearn.cm2,  
+           s = 60,           
+           edgecolors = 'k')
+
+ax.scatter(cancer_x_mds3[cancer_y == 1, 0],
+           cancer_x_mds3[cancer_y == 1, 1],
+           cancer_x_mds3[cancer_y == 1, 2],
+           c = 'r',
+           cmap = mglearn.cm2,
+           s = 60, 
+           edgecolors = 'k') 
+
+
+# 3. 요인 분석(Factor Analysis)
+#    - 잠재변수가 있다는 가정하에 데이터 내부에 잠재 변수를 발견하려는 분석 기법
+
+
+# 4. 독립성분 분석 개념(Independent Component Analysis : ICA)
+#    - 영상, 음성 분석에 주로 사용
+
+
+# 5. 특이값 분해 개념(Sigular Value Decomposition : SVD)
+#    - 행렬을 직교행렬과 대각행렬로 분해하는 방법
+#    - 신호처리, 기상학, 공학 데이터에서 주로 사용
+
+
 
 
