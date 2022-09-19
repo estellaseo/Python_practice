@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+run my_profile
 
 # =============================================================================
 # 연관성 분석
@@ -47,10 +48,93 @@
 # 스트링 치즈 총 구매 횟수 : 10
 
 #                                지지도       신뢰도       향상도
-# 군고구마 > 우유의 추천             0.05        0.5         0.01
-# 삼각김밥 > 컵라면                 0.16        0.8         0.08  
-# 불닭볶음면 > 스트링 치즈 추천      0.008        0.8         0.08
+# 군고구마 > 우유의 추천             0.05        0.5          5
+# 삼각김밥 > 컵라면                 0.16        0.8         4.44
+# 불닭볶음면 > 스트링 치즈 추천      0.008        0.8         
 
+
+
+
+# 예제) 연관분석 실습
+# 1. data loading
+vlist = [['맥주', '오징어', '치즈'],
+         ['소주', '맥주', '라면'],
+         ['맥주', '오징어'],
+         ['라면', '김치', '계란'],
+         ['맥주', '소세지']]
+
+
+# raw data
+# 거래번호     상품이름       가격      거래일자
+#   0001        맥주        ...
+#   0001       오징어
+#   0001        치즈
+
+
+# 2. 연관분석 모듈(패키지) 설치
+pip install mlxtend
+from mlxtend.preprocessing import TransactionEncoder   # 트랜젝션 데이터 변환 함수
+from mlxtend.frequent_patterns import association_rules, apriori # 연관분석 수행
+
+
+# 3. 트랜젝션 데이터 변환
+m_trans = TransactionEncoder()
+m_trans.fit(vlist)
+alist = m_trans.transform(vlist)            # 트랜젝션 데이터 각 구매품목별 구매여부
+df_result = DataFrame(alist, columns = m_trans.columns_)
+
+# 4. 연관분석 학습
+m_ap = apriori(df_result, min_support=0.1, use_colnames=True)
+dt_total = association_rules(m_ap, metric = 'lift')
+
+dt_total
+dt_total.columns        # ['antecedents', 'consequents', 'antecedent support',
+                        # 'consequent support', 'support', 'confidence', 
+                        # 'lift', 'leverage', 'conviction']
+
+
+dt_total.loc[:, ['antecedents', 'consequents', 'support', 'confidence', 'lift']]
+
+
+
+
+# [ 연습 문제 ]
+df_menu = pd.read_csv('data/chipotle.tsv', sep = '\t')
+df_menu.columns
+df_menu['item_name'].unique()
+
+# 1) order_id 별 item_name 결합
+df_menu.loc[:, ['order_id', 'item_name']]
+
+vlist = []
+for i in df_menu['order_id'].unique() :
+    vlist.append(list(df_menu.loc[df_menu['order_id'] == i, 'item_name']))
+    
+# [ 참고 ] 시리즈 형식 목록 만들기
+f1 = lambda x : x.str.cat(sep = ',').split(',')
+df_menu.groupby('order_id')['item_name'].apply(f1)
+
+
+# 2) 트랜젝션 데이터 변환
+m_trans = TransactionEncoder()
+m_trans.fit(vlist).transform(vlist)
+df_result = DataFrame(alist, columns = m_trans.columns_)
+
+
+# 3) 연관분석
+m_ap = apriori(df_result, min_support=0.01, use_colnames=True)
+dt_total = association_rules(m_ap, metric = 'lift')
+
+df_total2 = dt_total.loc[:, ['antecedents', 'consequents', 'support', 'confidence', 'lift']]
+
+
+# A, B를 동시에 주문할 비율 (support) XX% / A, C > B
+dt_total2.loc[:, ['antecedents', 'consequents', 'support']]
+df_total3 = df_total2.loc[df_total2['lift'] > 1, 
+                          ['antecedents', 'consequents', 'support', 'confidence', 'lift']]
+
+df_total3.sort_values(['confidence', 'lift'], ascending = False)
+df_total3.to_csv('df_total_menu.csv', index = False)
 
 
 
