@@ -107,5 +107,13 @@
 
 #### 2022.09.14
 - Data Pre-processing
-- PCA
+- Dimension Reduction(PCA, MDS, etc.)
+<br/>
 
+#### 2022.09.15
+- Association Analysis
+<br/>
+
+#### 2022.09.19
+- Naive Bayes Classification
+- Artificial Neural Network(ANN)
