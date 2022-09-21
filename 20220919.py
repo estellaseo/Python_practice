@@ -135,8 +135,13 @@
 
 
 # [ 활성화 함수 종류 ]
-
-# 6. softmax function : [0, 1]
+# 1. step function : [0,1]
+# 2. sign function : [-1,1]
+# 3. sigmoid function : [0,1]
+# 4. linear function : [-inf, inf]
+# 5. relu function : [0, inf]
+# 6. tanh function : [-1,1]
+# 7. softmax function : [0, 1]
 #    - 다중클래스 분류 문제 시 마지막 층에서 사용
 #    - 가중합의 크기를 총 합이 1인 새로운 가중치를 만드는 함수
 #    - 가장 큰 신호에 가장 큰 가중치, 가중치가 가장 큰 노드 1, 나머지 0 신호로 변환
