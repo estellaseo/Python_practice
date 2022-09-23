@@ -179,7 +179,7 @@ def f_cluster_score(x_data, pred) :
 f_cluster_score(iris_x, pred)
 f_cluster_score(iris_x, iris_predict)
 
-
+ 
 
 
 # =============================================================================
@@ -208,6 +208,9 @@ f_cluster_score(iris_x, iris_predict)
 # - 등분산성 : 잔차들의 분산이 일정한지 확인(잔차 산점도로 진단)
 # - 정규성(정상성) : 잔차항이 정규 분포를 따르는지 확인 - 매우 중요함
 #                 (히스토그램, Q-Q plot, 샤피로-윌크 검정, 콜모고로프-스미르노프 적합성 검정)
+
+# - 적합도 검정 > 정규성 검정
+#             > 기대분포를 따르는지 검정(카이제곱 검정)
 
 
 # [ 참고 ]
@@ -288,6 +291,7 @@ f_cluster_score(iris_x, iris_predict)
 #      제거된 변수들 중 다시 추가하는 경우를 고려하는 방식
 
 # AIC(아카이케 정보 기준 : Akaikie Information Criteria)
+
 
 
 
