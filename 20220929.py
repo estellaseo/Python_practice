@@ -82,7 +82,8 @@ Series(cancer_y).value_counts()                # 357, 212
 
 
 # 2. 데이터 분리
-
+from sklearn.model_selection import train_test_split
+train_x, test_x, train_y, test_y = train_test_split(cancer_x, cancer_y, random_state=0)
 
 
 # 3. 모델링
@@ -122,6 +123,36 @@ from xgboost.sklearn import XGBClassifier as xgb_c
 m_xgb = xgb_c()
 cv_score = cv(m_xgb, cancer_x, cancer_y, cv=4)
 cv_score.mean()                                  # 0.9648872254506058 
+
+
+
+#[ 참고 ] 분류 구분 시각화 함수
+def plot_decision_boundaries(X, y, model_class, **model_params):
+    reduced_data = X[:, :2]
+    model = model_class(**model_params)
+    model.fit(reduced_data, y)
+
+    # Step size of the mesh. Decrease to increase the quality of the VQ.
+    h = .02     # point in the mesh [x_min, m_max]x[y_min, y_max].    
+
+    # Plot the decision boundary. For that, we will assign a color to each
+    x_min, x_max = reduced_data[:, 0].min() - 1, reduced_data[:, 0].max() + 1
+    y_min, y_max = reduced_data[:, 1].min() - 1, reduced_data[:, 1].max() + 1
+    xx, yy = np.meshgrid(np.arange(x_min, x_max, h), np.arange(y_min, y_max, h))
+
+    # Obtain labels for each point in mesh using the model.
+    Z = model.predict(np.c_[xx.ravel(), yy.ravel()])    
+
+    x_min, x_max = X[:, 0].min() - 1, X[:, 0].max() + 1
+    y_min, y_max = X[:, 1].min() - 1, X[:, 1].max() + 1
+    xx, yy = np.meshgrid(np.arange(x_min, x_max, 0.1),
+                         np.arange(y_min, y_max, 0.1))
+
+    Z = model.predict(np.c_[xx.ravel(), yy.ravel()]).reshape(xx.shape)
+
+    plt.contourf(xx, yy, Z, alpha=0.4)
+    plt.scatter(X[:, 0], X[:, 1], c=y, alpha=0.8)
+    return plt
 
 
 
