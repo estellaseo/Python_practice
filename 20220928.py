@@ -160,6 +160,24 @@ ax[5].set_title('OSS')
 
 
 
+# [ 참고 ] 토멕링크 원리
+from sklearn.neighbors import NearestNeighbors
+
+# 1. 소수클래스 기준 각 관측치마다 가장 가까운(거리) 이웃 1개 확인
+m_nn = NearestNeighbors(n_neighbors=2)
+m_nn.fit(X)
+# 나를 제외한 가장 가까운 이웃 index
+nns = m_nn.kneighbors(X, return_distance = False)[:, 1] 
+
+# 2. 해당 클래스가 서로 다른 클래스일 경우 다수 클래스에 속하는 데이터 제거
+istomek = m_tomek.is_tomek(y, nns, [1]) # 실제 y값, 각 y값의 NN index, 소수클래스명
+y.index[istomek]                        # 토멕링크 index
+nns[istomek]                            # 각 토멕링크의 NN
+
+DataFrame({'rownum' : y.index[istomek], 'NN' : nns[istomek]})
+
+
+
 # 2. 오버샘플링
 #    - 소수 클래스를 다수 클래스에 맞게 사이즈를 늘리는 방식
 #    - 과적합이 위험
@@ -187,6 +205,7 @@ from imblearn.over_sampling import ADASYN
 
 
 # 2. 데이터 로딩
+import pandas as pd
 df1 = pd.read_csv('data/ThoraricSurgery.csv')
 df1.columns
 
@@ -254,6 +273,8 @@ x_resampled_sc_pca4 = m_pca.transform(x_resampled_sc4)
 
 # - 2차원 공간 산점도
 import matplotlib.pyplot as plt
+plt.rc('font', family = 'Malgun Gothic')
+plt.rc('axes', unicode_minus = False)
 fig, ax = plt.subplots(1, 4)
 
 ax[0].scatter(x_resampled_sc_pca[:, 0], x_resampled_sc_pca[:, 1], c = y_resampled)
