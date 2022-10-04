@@ -344,6 +344,8 @@ from statsmodels.stats.stattools import durbin_watson
 durbin_watson(m_reg6.resid)                      # 1.61
 # 설명변수 수(4), 훈련데이터 수(29)
 # > Durbin-Watson Table를 이용하여 해당 값에 대한 해석이 필요함
+#   [1.124, 1.743] 양쪽 구간에 가까울수록 자기상관이 강함
+#                 (중간값이 가까울수록 자기 상관이 없음)
 
 
 #    2) 잔차항에 대한 이상치 검정
@@ -378,7 +380,7 @@ stats.shapiro(m_reg6.resid)
 
 # 6. 다중공선성 진단
 #    VIF = 1 / (1-R**2)
-#    - VIF 직접 계산
+#    1) VIF 직접 계산
 #    case 1) x1 ~ x2 + x3
 for1 = 'Temperature ~ Pressure + Time'
 m_reg11 = ols(for1, data = df_x).fit()
@@ -395,15 +397,56 @@ m_reg13 = ols(for3, data = df_x).fit()
 1 / (1-m_reg13.rsquared)                  # 1.09
 
 
+#    2) VIF 코드 구현
+from patsy import dmatrices
+from statsmodels.stats.outliers_influence import variance_inflation_factor as vif
+
+df1 = pd.read_csv('data/Interactions_Continuous.csv')
+y, X = dmatrices('Strength ~ Temperature + Pressure + Time', 
+                 data = df1, return_type = 'dataframe')
+vif(X.values, 0)                          # 절편에 대한 VIF : 1713.7285
+vif(X.values, 1)                          # X1에 대한 VIF  : 1.1217
+vif(X.values, 2)                          # X2에 대한 VIF  : 1.2058
+vif(X.values, 3)                          # X3에 대한 VIF  : 1.0907
+
+
 
 # 7. 다중공선성 문제 해결
 #    1) 변수 제거 고려
 
-
 #    2) PCA
 
-
 #    3) 릿지, 라쏘, 엘라스틱넷
+#       - Ridge
+#         L2 규제 : 회귀 계수 제어(가중치의 제곱합을 최소화하는 방식으로 규제)
+#         alpha : 규제정도를 조절하는 초매개변수(클수록 회귀계수 작아짐)
+#       - Lasso
+#         L1 규제 : 회귀 계수 제어(가중치의 절댓값의 합을 최소화하는 방식으로 규제)
+#         alpha : 규제정도를 조절하는 초매개변수(클수록 회귀계수 작아짐, 0이 되기도-변수삭제 효과)
+#       - ElasticNet : Ridge + Lasso
+
+
+# 예제) boston 주택 가격에 대한 다중공선성 문제 해결
+# 1. sklearn
+from sklearn.linear_model import LinearRegression as reg
+
+
+# 2. Ridge
+from sklearn.linear_model import Ridge
+
+m_rid1 = Ridge(alpha = 1).fit(boston_x, boston_y)
+m_rid2 = Ridge(alpha = 0.1).fit(boston_x, boston_y)
+m_rid3 = Ridge(alpha = 0.01).fit(boston_x, boston_y)
+# > 추정된 회귀 계수가 0.001보다 작은 변수의 수
+
+
+# 3. Lasso
+from sklearn.linear_model import Lasso
+
+m_ras1 = Lasso(alpha = 1).fit(boston_x, boston_y)
+m_ras2 = Lasso(alpha = 0.1).fit(boston_x, boston_y)
+m_ras3 = Lasso(alpha = 0.01).fit(boston_x, boston_y)
+# > 추정된 회귀 계수가 0인 변수의 수
 
 
 
