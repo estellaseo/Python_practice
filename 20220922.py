@@ -146,6 +146,7 @@ ax[3].set_title('SOM 2 variables data')
 
 
 
+
 # [군집분석 평가]
 # 1. 총분산 (total_ss)
 #    - 군집과 상관없이 항상 고정
