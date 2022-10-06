@@ -427,28 +427,63 @@ vif(X.values, 3)                          # X3에 대한 VIF  : 1.0907
 
 
 # 예제) boston 주택 가격에 대한 다중공선성 문제 해결
+from sklearn.datasets import load_boston
+boston = load_boston()
+boston_x = boston['data']
+boston_y = boston['target']
+
+from sklearn.model_selection import train_test_split
+train_x, test_x, train_y, test_y = train_test_split(boston_x, boston_y, random_state = 0)
+
 # 1. sklearn
 from sklearn.linear_model import LinearRegression as reg
+m_reg1 = reg()
+m_reg1.fit(train_x, train_y)
+m_reg1.score(train_x, train_y)                  # 0.7697
+m_reg1.score(test_x, test_y)                    # 0.6354
 
 
 # 2. Ridge
 from sklearn.linear_model import Ridge
 
 m_rid1 = Ridge(alpha = 1).fit(boston_x, boston_y)
-m_rid2 = Ridge(alpha = 0.1).fit(boston_x, boston_y)
-m_rid3 = Ridge(alpha = 0.01).fit(boston_x, boston_y)
+m_rid1.score(train_x, train_y)                  # 0.7678
+m_rid1.score(test_x, test_y)                    # 0.6266
+
+m_rid2 = Ridge(alpha = 0.01).fit(boston_x, boston_y)
+m_rid2.score(train_x, train_y)                  # 0.7697
+m_rid2.score(test_x, test_y)                    # 0.6353
+
+m_rid3 = Ridge(alpha = 100).fit(boston_x, boston_y)
+m_rid3.score(train_x, train_y)                  # 0.7472
+m_rid3.score(test_x, test_y)                    # 0.5927
+
 # > 추정된 회귀 계수가 0.001보다 작은 변수의 수
+np.sum(np.abs(m_rid2.coef_) < 0.001)
+np.sum(np.abs(m_rid1.coef_) < 0.001)
+np.sum(np.abs(m_rid3.coef_) < 0.001)
 
 
 # 3. Lasso
 from sklearn.linear_model import Lasso
 
-m_ras1 = Lasso(alpha = 1).fit(boston_x, boston_y)
-m_ras2 = Lasso(alpha = 0.1).fit(boston_x, boston_y)
-m_ras3 = Lasso(alpha = 0.01).fit(boston_x, boston_y)
-# > 추정된 회귀 계수가 0인 변수의 수
+m_las1 = Lasso(alpha = 1).fit(boston_x, boston_y)
+m_las2 = Lasso(alpha = 0.01).fit(boston_x, boston_y)
+m_las3 = Lasso(alpha = 100).fit(boston_x, boston_y)
+
+# > 추정된 회귀 계수가 0인 변수의 수 
+#   : 탈락된 변수 수는 규제 강도(alpha)가 클수록 많아짐
+(m_las2.coef_ == 0).sum()                       # 0, alpha = 0.001
+(m_las1.coef_ == 0).sum()                       # 3, alpha = 1
+(m_las3.coef_ == 0).sum()                       # 11, alpha = 100
 
 
 
+# 각 모델별 회귀계수 비교 시각화
+import matplotlib.pyplot as plt
+plt.plot(m_las1.coef_, '^', label = 'Lasso alpha = 1')
+plt.plot(m_las2.coef_, 'v', label = 'Lasso alpha = 0.001')
+plt.plot(m_las3.coef_, '*', label = 'Lasso alpha = 100')
+plt.legend()
 
-
+# > alpha(규제 강도)가 커질수록 회귀 계수가 작아짐
