@@ -171,6 +171,18 @@ plt.legend(fontsize=8,            # 글자크기
            shadow=True)           # 그림자 출력 여부
 
 
+# subplot 호출 시 옵션 전달 방법
+import matplotlib.pyplot as plt
+plt.plot([1, 2, 3, 4])
+plt.title('aaaa')
+
+fig, ax = plt.subplots(1, 3)
+ax[0].plot([1, 2, 3, 4])
+ax[0].set_title('aaa')
+
+dir(ax[0])                        # subplot에서 사용 가능한 옵션(set_xxxx 확인)
+
+
 
 
 # [ 연습 문제 ] 
