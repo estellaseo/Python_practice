@@ -30,7 +30,46 @@ run my_profile
 
 
 
-# [ TEST1 : 요소 접근 ]
+# [ 크롤링 과정 ]
+# 1. url 정의
+
+# 2. url에 해당되는 html 파일 가져오기
+#    1) urlopen
+#       - from urllib.request import urlopen 선언 후 urlopen 함수로 url 호출
+#       - 호출된 html 파일을 BeautifulSoup으로 파싱
+#       - 정의되지 않은 url에 대해 즉각적인 HTTP error 발생
+
+#    2) requests
+#       - import requests 선언 후 get 메서드로 url 호출
+#       - get/post 가능(데이터 가져오기/전달하기)
+#       - 딕셔너리 형식으로 데이터 전달 > 데이터의 세부속성 전달이 수월(params)
+#       - 정의되지 않은 url에 대해 즉각적인 HTTP error 발생 X
+#       - API, HTTP/1.1만 지원
+
+#    3) httpx (설치 필요)
+#       - 설치 후 import httpx 선언하여 get 메서드로 url 호출
+#       - get/post 가능(데이터 가져오기/전달하기)
+#       - API, HTTP/1.1, HTTP/2. 지원
+#       - requests 사용불가일 경우 유용함
+
+#    4) selenium (설치 필요)
+#       - 설치 후 import selenium 선언하여 사용
+#       - 웹사이트에 동적 호출 전달의 목적(텍스트 입력, 로그인, 버튼 클릭 등)
+
+
+# 3. 소스 분석 후 원하는 데이터 가져오기
+#    1) html
+#       - find : 특정 요소로 직접 접근
+#       - select : 요소 관계(선택자; selector) 정의
+#    2) json
+#    3) xml
+
+
+
+
+# =============================================================================
+# TEST 1. 요소 접근
+# =============================================================================
 # 1. 라이브러리 로딩
 from bs4 import BeautifulSoup
 
@@ -65,9 +104,12 @@ p2.string
 
 
 
-# [ TEST2. find 메서드 사용 ]
-# - find()     : 속성을 지정해서 원하는 정보를 찾는 메서드
-# - find_all() : 여러 속성(태그)를 한 번에 추출 메서드
+
+# =============================================================================
+# TEST 2. find 메서드 사용
+# =============================================================================
+# find()     : 속성을 지정해서 원하는 정보를 찾는 메서드
+# find_all() : 여러 속성(태그)를 한 번에 추출 메서드
 
 # 1. 라이브러리 로딩
 from bs4 import BeautifulSoup
@@ -96,16 +138,19 @@ body.string
 
 
 
-# [ TEST3. find_all 메서드 사용 ]
+
+# =============================================================================
+# TEST 3. find_all 메서드 사용
+# =============================================================================
 # 1. 라이브러리 로딩
 from bs4 import BeautifulSoup
+
 
 # 2. HTML 소스 가져오기
 #    - ul   : unordered list
 #    - ol   : ordered list
 #    - li   : LIst의 약자로 ul, ol과 함께 사용하는 목록을 표현하는 요소
 #    - href : url로 연결할 수 있는 하이퍼링크를 생성해주는 속성으로 주로 a 요소와 같이 사용
-
 
 html = """
 <html><body>
@@ -121,12 +166,12 @@ html = """
 soup = BeautifulSoup(html, 'html.parser')
 
 
-# 4. 정보 추출**
+# 4. 정보 추출
 links = soup.find_all('a')
 
 for a in links :
-    vurl = a.attrs['href']        # a 요소에 있는 href 속성 추출(attrs 대신 get 사용 가능)
-    vtext = a.string              # a 요소에 있는 문자열 추출(string 대신 text 사용 가능)
+    vurl = a.attrs['href']     # a 요소에 있는 href 속성 추출(attrs 대신 get 사용 가능)
+    vtext = a.string           # a 요소에 있는 문자열 추출(string 대신 text 사용 가능)
     print(vtext, ':', vurl)
 
 for a in links :
@@ -136,27 +181,32 @@ for a in links :
 
 
 
-# [ TEST4. 선택자 사용하기 ] select, select_one 사용
+
+# =============================================================================
+# TEST 4. 선택자 사용하기 | select, select_one 사용
+# =============================================================================
 # 선택자(요소를 전체적인 느낌으로 정의하는 방식) 기본 서식
-# * : 모든 요소를 선택
-# <요소명> : 특정 요소를 선택
-# .<클래스이름> : 특정 클래스를 선택
-# #<id이름> : 특정 속성 선택
+# - *           : 모든 요소를 선택
+# - <요소명>     : 특정 요소를 선택
+# - .<클래스이름> : 특정 클래스를 선택
+# - #<id이름>    : 특정 속성 선택
+
 
 # 선택자들 관계 지정
-# <선택자> , <선택자> : 여러 선택자 모두 선택
-# <선택자> <선택자> : 앞 선택자 하위에 있는 다음 선택자 지정
-# <선택자> > <선택자> : 앞 선택자 하위에 있는 바로 다음 선택자 지정
-# <선택자> + <선택자> : 같은 계층에서 바로 뒤에 오는 요소 지정
-# <선택자1> ~ <선택자2> : 선택자1에서 선택자2의 모든 요소 지정
+# - <선택자> , <선택자>   : 여러 선택자 모두 선택
+# - <선택자> <선택자>     : 앞 선택자 하위에 있는 다음 선택자 지정
+# - <선택자> > <선택자>   : 앞 선택자 하위에 있는 바로 다음 선택자 지정
+# - <선택자> + <선택자>   : 같은 계층에서 바로 뒤에 오는 요소 지정
+# - <선택자1> ~ <선택자2> : 선택자1에서 선택자2의 모든 요소 지정
+
 
 # 1. 라이브러리 로딩
 
 
 # 2. html 가져오기
-# - div : 특별한 의미는 없으며 문서의 영역을 지정하는데 사용 요소
-# - id 속성 : 식별자
-# - class 속성 : 정의를 내리기 위한 구분자    
+#    - div       : 특별한 의미는 없으며 문서의 영역을 지정하는데 사용 요소
+#    - id 속성    : 식별자
+#    - class 속성 : 정의를 내리기 위한 구분자    
 
 html = """
 <html><body>
@@ -179,6 +229,7 @@ html = """
 </body></html>
 """
 
+
 # 3. 파싱
 soup = BeautifulSoup(html, 'html.parser')
 
@@ -193,7 +244,10 @@ for i in l1 :
 
 
 
-# [ TEST5 : 위키 문헌의 윤동주 작가의 작품 목록 가져오기 ]
+
+# =============================================================================
+# TEST 5. 위키 문헌의 윤동주 작가의 작품 목록 가져오기
+# =============================================================================
 # 1. url 가져오기
 from urllib.request import urlopen 
 
@@ -201,26 +255,32 @@ url = "https://ko.wikisource.org/wiki/%EC%A0%80%EC%9E%90:%EC%9C%A4%EB%8F%99%EC%A
 html = urlopen(url)
 
 
-# 2. html parsing
+# 2. html parsing 
+from bs4 import BeautifulSoup
 soup = BeautifulSoup(html, 'html.parser')
 
 
 # 3. 작품 이름 가져오기 위한 CSS 선택자 확인
-# 3-1)우클릭 하여 개발자 도구 확인  
-# 3-2) 원하는 부분을 선택하여 html 요소 확인(우클릭 > 복사 > select)
-#      => #mw-content-text > div.mw-parser-output > ul:nth-child(6) > li > b > a   
+#    1)우클릭 하여 개발자 도구 확인  
+#    2) 원하는 부분을 선택하여 html 요소 확인(우클릭 > 복사 > select)
+#       mw-content-text > div.mw-parser-output > ul:nth-child(6) > li > b > a   
 
 
 # 4. 추출
-vlist = soup.select('a')
-vlist = soup.select('div.mw-parser-output > ul > li a')
+vlist = soup.select('a')                                                       # 이용 약관까지 출력
+vlist = soup.select('div.mw-parser-output > ul > li a')                        # 책 목록만 출력
+vlist = soup.select('div#mw-content-text > div.mw-parser-output > ul > li a')  # 책 목록만 출력
 
-output = []
-for i in vlast:
+output = [] 
+for i in vlist : 
+    output.append(i.string)
     
 
 
-# [ TEST6 : 아디다스 운동화 목록 가져오기 ]
+
+# =============================================================================
+# TEST 6. 아디다스 운동화 목록 가져오기
+# =============================================================================
 from urllib.request import urlopen 
 from bs4 import BeautifulSoup
 
@@ -237,6 +297,7 @@ for i in vlist :
 len(outlist)
 
 
+
 # 다른 페이지에 있는 정보 가져오기
 url = 'https://sneakernews.com/category/adidas/page/2'
 html = urlopen(url)
@@ -251,30 +312,30 @@ for i in vlist :
 len(outlist)
 
 
+
 # 여러 페이지에 있는 정보 가져오기(1~10page)
 outlist = []
-vlist = soup.select('div.post-content > h4 > a')
 
-for page_num in range(1, 11) :
+for page_num in range(1,11) :
     url = 'https://sneakernews.com/category/adidas/page/' + str(page_num)
-    
     html = urlopen(url)
     soup = BeautifulSoup(html, 'html.parser')
+    vlist = soup.select('div.post-content > h4 > a')
     
-    vname = [a_name.string for a_name in vlist]
+    vname = [ a_name.string for a_name in vlist]
     outlist.append(vname)
-   
-df_name = DataFrame(outlist, index = range(1, 11))
+
+df_name = DataFrame(outlist, index = range(1,11))
 df_name = df_name.stack().reset_index()
-df_name.drop('level_1', axis = 1)
+df_name = df_name.drop('level_1', axis=1)
 df_name.columns = ['page_num', 'name']
 
 
-# 모든 페이지에 있는 정보 가져오기(페이지 정부가 없는 경우 크롤링 stop)
-from urllib.request import HTTPError
 
-url = 'https://sneakernews.com/category/adidas/page/' + str(10000)
-html = urlopen(url)
+# 모든 페이지에 있는 정보 가져오기(페이지 정보가 없는 경우 크롤링 stop)
+from urllib.request import HTTPError
+from urllib.request import urlopen
+from bs4 import BeautifulSoup
 
 def f_page(index) :
     try :
@@ -286,9 +347,9 @@ def f_page(index) :
         vlist = soup.select('div.post-content > h4 > a')
         
         vname = [ i.text for i in vlist ]
-        
         return vname  
-    
+
+f_page(1100)
     
 def adidas_crw() :
     page_num = 1
@@ -299,21 +360,23 @@ def adidas_crw() :
             break
         else : 
             df_result.append({'page':page_num, 'name':vname})
-        page_num += 1            # page_num = page_num + 1
+        page_num += 1                 # page_num = page_num + 1
     return df_result
 
-f_page(1100)
 
 import time
 start = time.time()
-adidas_crw()
+d1 = adidas_crw()
 end = time.time()
 
 print(end - start)
 
+
     
 
-# [ TEST7 : 네이버 날씨 가져오기(특정 지역) ]
+# =============================================================================
+# TEST 7. 네이버 날씨 가져오기(특정 지역)
+# =============================================================================
 import requests
 from bs4 import BeautifulSoup
 
@@ -325,10 +388,9 @@ vhtml = requests.get('https://search.naver.com/search.naver?where=nexearch&sm=to
 
 
 # 2. error code 확인
-# 200 : 정상
-# 404 : Not Found
+#    200 : 정상
+#    404 : Not Found
 vhtml.status_code
-
 
 vaddr = '평양'
 vhtml = requests.get('https://search.naver.com/search.naver?query='+ vaddr +'날씨')
@@ -348,14 +410,17 @@ if error_check is None :
 else :
     print('해당 지역 날씨 정보입니다.')
     
+    
 # 온도 가져오기
 vlist = soup.select('.temperature_text > strong')
 vtemp = vlist[0].text[5:]
 print('현재 온도 : ', vtemp)
 
+
 # 맑음/흐림 정보 가져오기
 vwther = soup.select('div.temperature_info > p > span.weather.before_slash')[0].string
 print('현재 날씨 : ', vwther)
+
 
 # 미세먼지, 초미세먼지, 자외선, 일몰 가져오기
 vtime = soup.select('ul.today_chart_list > li > a > span.txt')[:4]
@@ -399,96 +464,258 @@ crawling_weather('서울')
 
 
 
+
 # =============================================================================
-# TEST8 : Open API를 활용한 정보 가져오기
+# TEST 8. selenium을 이용한 네이버 검색 
 # =============================================================================
-# 기본제공 url : http://apis.data.go.kr/B090041/openapi/service/SpcdeInfoService/
-# 추가 url
-# getHoliDeInfo    	국경일 정보조회
-# getRestDeInfo   	공휴일 정보조회
-# getAnniversaryInfo	기념일 정보조회
-# get24DivisionsInfo	24절기 정보조회
-# getSundryDayInfo	잡절 정보조회
+# pip install selenium
+# pip install webdriver_manager
 
-# 1. url open
-import requests
-url = 'http://apis.data.go.kr/B090041/openapi/service/SpcdeInfoService/getRestDeInfo'
-api_key_utf8 = 'KiowcYn0T5pJHycrZhkhZfqvqlWrk8eCP6nIRX1YUZf5TIQLLG0kh%2F6PYHwXLRbmYziJXniO76smUIwIpoKd%2Bg%3D%3D'
-api_key_decoding = requests.utils.unquote(api_key_utf8)
+# 1. 필요 패키지 로딩
+from selenium import webdriver 
+from webdriver_manager.chrome import ChromeDriverManager
+from bs4 import BeautifulSoup
+from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
 
 
+# 2. Chrome 실행
+driver = webdriver.Chrome(ChromeDriverManager().install())
+driver.implicitly_wait(30)                     # driver에 대한 time out 설정(초 단위)
 
-# 2. parameter 정의
-params = {
-    'ServiceKey' : api_key_decoding,     # decoding key 전달
-    'pageNo' : '1',
-    'numOfRows' : 30,
-    'solYear' : year,
-    '_type' : 'json'
-    }
 
+# 3. Chrome을 통해 url 접속
+url = 'http://www.naver.com'
+driver.get(url)
+
+
+# 4. 검색창에 텍스트 입력하기
+#    - 개발자도구를 통해 검색창 입력에 필요한 요소 정보 체크
+#    - id = "query" 임을 확인
+#    - 버튼을 클릭하는 형식의 모듈 필요
+element = driver.find_element(By.ID, 'query')  # find_element : 요소를 찾는 메서드
+element.send_keys('피자')
+element.send_keys(Keys.ENTER)
+
+
+
+# [ 참고 ] 기타 동작
+driver.back()                     # 뒤로가기
+driver.forward()                  # 앞으로 가기
+driver.refresh()                  # 새로고침
+driver.close()                    # 탭 닫기
+driver.quit()                     # 창 닫기
+driver.maximize_window()          # 창 최대화
+driver.minimize_window()          # 창 최소화
+print(driver.page_source)         # 브라우저 HTML 정보 출력
+
+
+
+
+# [ selenium을 이용한 네이버 로그인 ]
+# 1. 필요 패키지 로딩
+from selenium import webdriver 
+from webdriver_manager.chrome import ChromeDriverManager
+from bs4 import BeautifulSoup
+from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
+
+
+# 2. Chrome 실행
+driver = webdriver.Chrome(ChromeDriverManager().install())
+driver.implicitly_wait(30)      # driver에 대한 time out 설정(초 단위)
+
+
+# 3. Chrome을 통해 url 접속
+url = 'http://www.naver.com'
+driver.get(url)
+
+
+# 4. 로그인 시도
+#    로그인 버튼이 정의된 요소를 개발자도구를 통해 확인
+#    현재시점 class명 : link_login
+element = driver.find_element(By.CLASS_NAME, 'link_login')
+element.click()
+
+driver.find_element(By.ID, 'id').send_keys('')
+driver.find_element(By.ID, 'pw').send_keys('')
+driver.find_element(By.ID, 'log.login').click()
+# bot 인지, 로그인 막힘
+
+
+# 5. 클립보드를 사용한 로그인 시도
+user_id = ''
+user_pw = ''
+
+
+# Chrome 실행, 로그인 버튼 클릭까지 진행
+driver = webdriver.Chrome(ChromeDriverManager().install())
+driver.implicitly_wait(30) 
+url = 'http://www.naver.com'
+driver.get(url)
+element = driver.find_element(By.CLASS_NAME, 'link_login')
+element.click()
+
+
+# id, pw 복사&붙여넣기
+# pip install pyperclip
+import pyperclip
+import time
+
+ele_id = driver.find_element(By.ID, 'id')
+ele_id.click()
+pyperclip.copy(user_id)                  # user_id에 있는 내용 클립보드에 복사
+ele_id.send_keys(Keys.CONTROL, 'v')      # 클립보드 내용 붙여넣기
+time.sleep(1)
+
+ele_pw = driver.find_element(By.ID, 'pw')
+ele_pw.click()
+pyperclip.copy(user_pw)                  # user_pw에 있는 내용 클립보드에 복사
+ele_pw.send_keys(Keys.CONTROL, 'v')      # 클립보드 내용 붙여넣기
+
+driver.find_element(By.ID, 'log.login').click()
+
+
+
+
+# [ 네이버 뉴스 - 헤드라인, 미리보기 가져오기 ]
+from urlib.request import urlopen
+from bs4 import BeautifulSoup
+
+# 첫페이지 뉴스 정보 가져오기
+url = 'https://search.naver.com/search.naver?where=news&sm=tab_pge&query=%EB%89%B4%EC%8A%A4&sort=0&photo=0&field=0&pd=0&ds=&de=&cluster_rank=12&mynews=0&office_type=0&office_section_code=0&news_office_checked=&nso=so:r,p:all,a:all&start=1'
+html = urlopen(url)
+soup = BeautifulSoup(html, 'html.parser')
+
+
+# 헤드라인 가져오기
+vlist = soup.select('div.news_area > a')
+for news in vlist :
+    print(news.text)
+
+
+# 미리보기 가져오기
+vlist = soup.select('div.dsc_wrap > a')
+for news in vlist :
+    print(news.text)
+
+
+
+# 특정 페이지까지 정보 가져오기 함수
+# 1. url 정의
+#    - 페이지 변화가 html에서 어떻게 이루어지는지 우선 파악해야 함
+#    - url 마지막 숫자가 변경되는 것을 확인
+page = 2
+if page == 1 :
+    page = ''
+else :
+    page -= 1
+url = f'http://...start={page}1'
+
+
+# 2. 지정 페이지의 뉴스 크롤링 함수
+def f_naver_news_crawl(page:int) :
+    # page 변화에 따른 url 생성
+    if page == 1 :      # page 1일 경우 페이지번호 생략을 위해 빈문자열 생성
+        page = ''
+    else :
+        page -= 1       # page = page - 1  
+    url = f'https://search.naver.com/search.naver?where=news&sm=tab_pge&query=%EB%89%B4%EC%8A%A4&sort=0&photo=0&field=0&pd=0&ds=&de=&cluster_rank=12&mynews=0&office_type=0&office_section_code=0&news_office_checked=&nso=so:r,p:all,a:all&start={page}1'
     
+    # url open 및 파싱
+    html = urlopen(url)
+    soup = BeautifulSoup(html, 'html.parser')
+    
+    # 헤드라인 추출
+    vlist = soup.select('div.news_area > a')
+    head = [news.text for news in vlist]
 
-# 3. 데이터 요청(requests or httpx 사용)
-# pip install httpx
-import httpx
-response = requests.get(url, params = params)
-response = httpx.get(url, params = params, timeout = 5)
+    # 미리보기 추출
+    vlist2 = soup.select('div.dsc_wrap > a')
+    preview = [prev.text for prev in vlist2]
+    
+    # 최종 리턴 형식(데이터프레임화)
+    df_news = DataFrame({'head' : head, 'preview' : preview})
+    return df_news
 
-response.status_code
-
-contents = response.json()
-
-dict_data = contents['response']['body']['items']['item']
-DataFrame(dict_data)
-
-
-# 4. 크롤링 함수 생성
-from datetime import datetime
-
-def api_get(year: datetime) -> pd.DataFrame:
-    decoding = ''
-    url = 'http://apis.data.go.kr/B090041/openapi/service/SpcdeInfoService/getRestDeInfo'
-
-    params = {'serviceKey': decoding,
-              'pageNo': '1',
-              'numOfRows': 30,
-              'solYear': year,
-              '_type': 'json'    # 데이터 불러올 형식 json or xml
-              }
-
-    is_end: bool = False
-    holidays = []
-
-    while is_end is not True:
-
-        res = httpx.get(url, params=params, timeout=5)
-
-        if res.status_code >= 300:
-            raise httpx.RequestError(f"Error response {res.status_code} while requesting")
-
-        contents = res.json()
-
-        partial = []
-        for data in contents["response"]["body"]["items"]["item"]:
-            partial.append(data)
-        holidays += partial
-
-        # 공휴일 개수가 params에서 설정한 "numOfRows" 개수 보다 작으면 return, 
-        # 아닐 경우 params의 pageNo을 1개씩 추가
-        if len(partial) < 30:
-            is_end = True
-        else:
-            params["pageNo"] += 1
-
-    return pd.DataFrame(holidays)
+f_naver_news_crawl(5)
 
 
-api_get(2023)
+# 3. 특정 페이지까지 모든 뉴스 크롤링 함수
+def f_naver_news_all_crawl(page:int) :
+    df_total = DataFrame()
+    for page_num in range(1, page + 1) :
+        df_news = f_naver_news_crawl(page)
+        df_total = pd.concat([df_total, df_news], ignore_index = True)
+        df_news = DataFrame()
+    return df_total
+
+f_naver_news_all_crawl(3)
+
 
 
 
 # =============================================================================
-# TEST8 : 교보문고 책
+# TEST 9. 베스트셀러 도서목록 가져오기
 # =============================================================================
-# 1. url 가져오기
+# 특이사항 : urlopen, requests, httpx 사용 불가
+# 책 제목, 저자, 출판사, 가격 크롤링
+
+# 1. 필요 패키지 로딩
+from selenium import webdriver 
+from webdriver_manager.chrome import ChromeDriverManager
+from bs4 import BeautifulSoup
+
+
+# 2. url 정의 및 호출
+url = 'https://book.naver.com/bestsell/bestseller_list.naver?cp=yes24&cate=total&bestWeek=2022-07-4&indexCount=&type=list&page=1'
+
+# 1) urlopen
+html = urlopen(url)
+soup = BeautifulSoup(html, 'html.parser')
+
+# 2) requests
+html = requests.get(url)
+soup = BeautifulSoup(html, 'html.parser')
+
+# 3) httpx
+html = httpx.get(url)
+soup = BeautifulSoup(html, 'html.parser')
+
+# 4) selenium
+driver = webdriver.Chrome(ChromeDriverManager().install())
+driver.implicitly_wait(30) 
+driver.get(url)
+soup = BeautifulSoup(driver.page_source, 'html.parser')
+
+
+# 첫번째 페이지에 대한 정보 크롤링 함수
+def bestseller_list():
+    url = 'https://book.naver.com/bestsell/bestseller_list.naver?cp=yes24&cate=total&bestWeek=2022-07-4&indexCount=&type=list&page=1'
+    driver = webdriver.Chrome(ChromeDriverManager().install())
+    driver.implicitly_wait(30) 
+    driver.get(url)
+    soup = BeautifulSoup(driver.page_source, 'html.parser')
+    
+    vlist = soup.select('div.section_bestseller li > dl a.N\=a\:bel\.title')
+    vtitle = [i.text for i in vlist]
+    vlist2 = soup.select('div.section_bestseller li > dl > dd.txt_block')
+    vinfo = [j.text.split('|') for j in vlist2]
+    vlist3 = soup.select('div.section_bestseller li > dl > dd.txt_desc em.price')
+    vprice = [z.text for z in vlist3]
+ 
+  
+    df_book = DataFrame({'책제목' : vtitle, 
+                         '저자' : Series(vinfo).str[0].str[2:],
+                         '출판사' : Series(vinfo).str[1].str[2:],
+                         '가격' : Series(vprice).str[:-7].str.replace(',', '')})
+    return df_book
+    
+bestseller_list()
+
+
+# 지정 페이지까지 모든 정보 크롤링 함수
+
+
+
+
