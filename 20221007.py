@@ -93,7 +93,7 @@ df_total['Item_Identifier']
 #    각 컬럼별 결측치 수/비율 확인
 df_total.isna().sum()
 len(df_total['Item_Weight'])              # 14204
-
+ 
 df_train.isna().sum()
 df_test.isna().sum()
 
