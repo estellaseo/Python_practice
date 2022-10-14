@@ -214,7 +214,12 @@ card = card.applymap(lambda x : int(x.replace(',', '')))
 card['날짜'] = pd.date_range('2022/01/01', freq = 'W-SUN', periods = len(card))
 card = card.set_index('날짜')
 
-card.resample('D').asfreq().bfill() / 7
+card1 = card.resample('D').asfreq().bfill() / 7
  
+card2 = card1.iloc[0:1]
+card2.index = card2.index - Day(1)
+card_total = pd.concat([card2,card1], axis=0)
+
+
 
 
