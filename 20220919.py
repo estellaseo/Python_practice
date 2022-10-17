@@ -26,156 +26,119 @@
 
 
 
-# =============================================================================
-# 인공 신경망
-# =============================================================================
-# - Deep Learning
-# - 두뇌 신경세포인 뉴런에 전기 신호를 전달하는 모습을 모방한 기계학습 모델
-# - 전기신호(입력데이터)를 연속적으로 보다 의미있는 신호 가공 과정을 반복
-# - 입력값을 받아 출력값을 만들기 위해 활성함수 사용
+# [ 예제 ] 나이브 베이즈 모델 스팸분류 자연어 처리 과정
+# 1. 데이터 만들기
+vlist = ['안녕하세요 은혜 금융입니다. 귀하는 아무 조건 없이 1000만원 대출 가능한 우수 고객입니다.' ,
+'새로운 상품이 출시되어 안내문자 드립니다. 21세 이상 직장인/사업자 대상 무보증 최고 1억원 대출 가능합니다.',
+'안녕하세요. 잘 지내시죠? 안부차 연락드립니다. 항상 건강하세요.',
+'오늘의 집에서 고객님께만 20% 할인 쿠폰을 드렸어요. 지금 바로 쿠폰함을 확인해보세요.',
+'고객님 카드론 혜택 안내드립니다. 필요할 때 딱 이자는 쓴 만큼만 딱 장기카드 대출 가능합니다.']
+
+y = [1, 1, 0, 0, 1]                      # 스팸문자 : 1, 햄 : 0
 
 
+# 2. 토큰화 및 조사제거
+import konlpy.tag
 
-# [ 용어 정리 ]
-# 1) layer(층) 
-#  : - 노드(뉴런)들이 있는 각 단계
-#    - 특정 노드의 신호는 이전 층의 노드 신호들의 가중합
-# 2) input layer(입력층) : 최초 신호를 받아들이는 레이어(단일층, 생략 불가)
-# 3) hidden layer(은닉층) : 중간에 신호를 가공하는 층(여러 층일 수 있음)
-# 4) output layer(출력층) : 예측값을 리턴하는 최종 레이어(단일층, 생략 불가)
-# 5) perceptron(퍼셉트론) : 가장 기본적인 신경망 단위(input - hidden(1) - output)
-# 6) activation function(활성함수) 
-#  : - 목적 1) 노드의 신호를 다음 노드로 전달할지 여부를 결정(전달 or 전달X 결정)
-#    - 목적 2) 이중분류 문제(0 or 1로 전달)
-#    - S자 모양의 시그모이드, 렐루, 소프트맥스 함수 등
+Okt = konlpy.tag.Okt()                   # 자연어 사전 정의
+Okt.pos(vlist[0])                        # 문장 분석
 
 
+# 3. 명사 추출
+def f_extract(text) :
+    Otk = konlpy.tag.Okt()
+    Otk_v1 = Otk.pos(text) 
+    
+    Noun_words = []
+    for word, pos in Otk_v1 :
+        if pos == 'Noun' :               # 명사외에 다른 대상을 추출할 경우 수정 필요
+            Noun_words.append(word)
+            
+    return Noun_words
 
-# [ 매개변수 / 초매개변수 ]
-# - Parameter       : 가중치, 활성함수의 계수
-# - Hyper-Parameter : 노드(유닛)의 수(단, 입력층/출력층 노드 수는 지정 불가), 층의 수,
-#                     학습률(learning rate), batch_size
-
-# input layer의 노드 수는 1개 이상 가능
-# 회귀모델 output layer 노드 수 - 반드시 1개
-# 분류모델 output layer 노드 수 - class 개수에 따라 달라짐
-# ex) 2개 class : 출력층 노드 1개 or 2개
-#     3개 class : 출력층 노드 1개 or 2개 or 3개(선호 : 3개)
-
-
-# AND 연산  : 입력값(X, Y)이 모두 1이면 1 리턴, 그 외 0 리턴
-# OR 연산   : 입력값(X, Y)이 모두 0이면 0 리턴, 그 외 1 리턴
-# XOR  연산 : 입력값(X, Y)이 모두 같으면 0, 서로 다르면 1 리턴
+f_extract(vlist[0])                      # 명사만 추출된 리스트
 
 
+# 4. 전체 데이터 셋 적용(각 문장에서 추출된 명사는 다시 한 문장으로 결합)
+outlist = []
+for i in vlist :
+    outlist.append(' '.join(f_extract(i)))
 
 
-#[ 신경망의 원리 ]
-# 1. 가중치의 결정 : 경험적 결정 > 오차를 최소화하는 가중치 결정
-
-# 2. 단층신경망에서의 가중치 결정 과정(델타 규칙)
-#    - 델타 규칙에 의하면 어떤 입력 노드가 출력 노드의 오차에 기여했다면 
-#      각 노드의 연결 가중치(w)는 해당 입력노드의 신호(출력)와 출력 노드의 오차에 비례
-#      α(learning rate, 학습률) : 가중치를 얼마나 바꿀지를 결정하는 매개변수
-#                                너무 크면 수렴 구간을 지나쳐 최적화 불가
-#                                너무 작으면 수렴점을 찾기까지 시간이 많이 소요됨
-
-# 3. 최적화
-# 경사하강법(Gradient Descent) : 
-# - 오차를 최소화 시키는 가중치 결정 단계
-# - 최초 가중치를 임의로 설정
-# - 임의로 설정된 가중치에 의해 오차 결정
-# - 가중치 업데이트 > 변화에 따라 최적화 방식이 달라짐
-# - 변경된 가중치에 의해 다시 오차 결정
-# - 위 과정을 반복하여 오차를 최소화시키는 기울기 결정(미분 활용)
+# 5. 불용어 처리(제거)
+#    1) 불용어 정의
+stops = ['은혜', '아무', '차', '만', '때', '이상', '세', '무', '항상', '오늘', '집', '바로']
 
 
-# 1) SGD(Stochastic Gradient Descent, 확률 경사 하강법)
-#    - 하나의 학습 데이터마다 오차 계산, 이를 통해 가중치 업데이트
-#      ex) 150개의 학습데이터일 경우 150번 업데이트
-#          업데이트 화정이 매우 들쭉날쭉함 > 확률적  
-       
-# 2) batch(배치)
-#    - 모든 데이터를 한 번 학습시켜서 1번의 가중치를 갱신
-#    - 각 데이터를 학습시킬때마다 가중치를 얻고 이의 평균으로 최종 가중치를 갱신
-#    - 모든데이터를 1번 학습 시켜서 1번의 가중치를 갱신하므로 갱신 속도가 느림
- 
-# 3) mini batch(미니 배치)
-#    - 임의의 n개 데이터만 선택하여 가중치를 업데이트
-#    - SGD + batch 혼합형
-#      ex) 150개의 학습데이터, 50(batch size)개 샘플링 
-#          > 3번 업데이트(mini batch(분리된 집합수)수와 같음)
-#            batch size가 클수록 총 학습시간은 줄어듦
-#            batch size = 1, SGD 동일
+#    2) 불용어 제거 및 단어의 수 count
+#       CountVectorizer : 문장(문자열)에서 단어 추출(토큰화 > 불용어 제거), 단어별로 빈도수 계산
+from sklearn.feature_extraction.text import CountVectorizer    
+    
+vect1 = CountVectorizer(analyzer='word', stop_words=stops)
+X = vect1.fit_transform(outlist)
+
+vwords = vect1.get_feature_names()       # get_feature_names > get_feature_names_out 변경 예정
+X.toarray()                              # 각 문장별 토큰화된 단어의 수 배열 형태로 제공
+
+DataFrame(X.toarray(), columns = vwords)
 
 
+# 6. TF-IDF 변환
+#    단어가 많이 반복되는 경우 > 해당 단어 중요도 높게 계산
+#    모든 문서(관측치)마다 반복되는 단어의 경우 가중치를 다시 낮게 반영 필요
 
-# 단층신경망(델타규칙)으로는 XOR 선형분리 불가 > 다층 신경망을 통해 해결
-# 은닉층의 오차를 정의 불가 
-# - 입력층에서 중간층으로 향하는 기울기 최적화 불가
-# - 오차 역전파를 통해 해결 
-#   : 오차를 결정하는 요인에 의해 마지막 층에서의 오차를 중간층으로 거꾸로 전달
+#    1) TF(Term Frequency) : 단어의 빈도수. 각 문서에 각 단어가 포함된 횟수
+#    2) IDF(Inverse Document Frequency) : Document Frequency의 역수
+#    3) DF : 특정 단어가 포함된 문장 수 / 전체 문장 수 > 공통적으로 발견되는 문자인지 확인
+#    4) IDF = log(전체 문장 수/(특정 단어가 포함된 문장 수 + 1))
 
+from sklearn.feature_extraction.text import TfidfTransformer, TfidfVectorizer
+m_tfidf = TfidfTransformer()
+X_tfidf = m_tfidf.fit_transform(X)       # X : 단어별 count 결과를 가져야함
 
+print(X_tfidf)                           # (0, 14)	       0.5065627726821486
+                                         # 문장번호, 단어번호, ifidf 변환값
+                
+                
+# 7. 나이브 베이즈 모델 적용
+#    - GaussianNB    : 설명변수가 연속형인 경우
+#    - CategoricalNB : 설명변수가 범주형인 경우
+#    - BernoulliNB   : 설명변수가 범주형인 경우(종속변수가 이진분류)
+#    - MultinomialNB : 단어수(문장에 대한 분리) 기반 모델
 
-# [ 반복과 관련된 용어 정리 ]
-# - batch_size : 전체 데이터를 임의로 n개 샘플링하여 학습, 가중치 업데이트할 때 n의 값
-#                (값의 범위 : 1 ~ 전체 데이터 수)
+from sklearn.naive_bayes import MultinomialNB
 
-# - epoch      : 전체 데이터 셋 기준으로 신경망을 통과한 횟수
-#                순전파 + 역전파가 이루어진 횟수
-#                100 epoch > 100번의 순전파, 100번의 역전파
+# 1) TF-IDF 변환 이전
+m_nb1 = MultinomialNB()
+m_nb1.fit(X, y)
+m_nb1.score(X, y)                        # 100%
 
-# - iteration  : 1-epoch를 마치는데 필요한 mini batch 수
-#                즉 한 번의 epoch를 통해 발생한 가중치 업데이트 
-#                700개 데이터를 100(batch_size)개씩 7개의 미니배치로 나눌 경우
-#                1번의 epoch가 발생하게 되면 7번 업데이트 iteration = 7
+m_nb1.predict_proba(X)[:,1]              # 스팸일 확률
 
+# 2) TF-IDF 변환 이후
+m_nb2 = MultinomialNB()
+m_nb2.fit(X_tfidf, y)
+m_nb2.score(X_tfidf, y)                  # 100%
 
-
-
-# [ 활성화 함수 종류 ]
-# 1. step function : [0,1]
-# 2. sign function : [-1,1]
-# 3. sigmoid function : [0,1]
-# 4. linear function : [-inf, inf]
-# 5. relu function : [0, inf]
-# 6. tanh function : [-1,1]
-# 7. softmax function : [0, 1]
-#    - 다중클래스 분류 문제 시 마지막 층에서 사용
-#    - 가중합의 크기를 총 합이 1인 새로운 가중치를 만드는 함수
-#    - 가장 큰 신호에 가장 큰 가중치, 가중치가 가장 큰 노드 1, 나머지 0 신호로 변환
-
-# ex) A, B, C class를 갖는 분류과제 적용 시 마지막층 설계
-#     case 1 : 3개 노드 생성, sigmoid
-#     case 2 : 3개 노드 생성, softmax
+m_nb2.predict_proba(X_tfidf)[:,1]        # 스팸일 확률
 
 
+# 8. 워드 클라우드 생성
+#    pip install wordcloud(visual studio C++ 설치 필요)
+from wordcloud import WordCloud
 
+from os import path
+FONT_PATH = 'C:/Windows/Fonts/malgun.ttf'# 맑은고딕체 폰트설정
 
-# [ 오차 함수(손실함수) 정의 및 종류 ]
-# 오차와 기울기와의 관계를 활용하여 최적화 진행 > 최종 기울기 결정
-# 1. 회귀 : MSE(Mean Squared Error), RMSE
-# 2. 분류 : cross entropy
-#          (binary_crossentropy - 이진, categorical_corssentropy - 다항)
+noun_text = ' '.join(vwords)             # 표현할 단어들이 포함된 문자열 생성
 
+wordcloud = WordCloud(max_font_size=50, max_words=30, background_color='white', 
+                      relative_scaling=.5, font_path=FONT_PATH).generate(noun_text)
 
+import matplotlib.pyplot as plt
+plt.figure()
+plt.imshow(wordcloud, interpolation='bilinear')
+plt.axis("off")
+plt.show()
 
-
-# [ 기타 최적화 과정]
-# 1. SGD(Stochastic Gradient Descent, 확률적 경사 하강법)
-# 2. 모멘텀(Momentum)
-# 3. 아다그라드(AdaGrad)
-# 4. 아담(Adam) : 모멘텀 방식과 아다그라드 방식의 장점을 합친 알고리
-
-
-
-
-# [ 과대적합 해결 방법 ]
-# - epoch 수 조절(stopping rule 추가)
-# - dataset 증가(학습 데이터 수를 늘림)
-# - hidden layer 수 조절법
-# - layer 구성 노드 수 조절
-# - dropout : 신경망 모델의 학습 과정에서 신경망 일부를 사용하지 않는 방법
-#             초기 드롭아웃, 공간적 드롭아웃, 시간적 드롭아웃
 
