@@ -13,7 +13,7 @@ import pandas as pd
 # 3,023개 제공 (87X65)
 
 from sklearn.datasets import fetch_lfw_people
-people = fetch_lfw_people(min_faces_per_person = 20, resize = 0.7)
+people = fetch_lfw_people(min_faces_per_person = 50)
 
 people_x = people['data']
 people_y = people['target']
@@ -28,41 +28,70 @@ people_img = people['images']         # 평탄화 시키기 이전 데이터
 plt.imshow(people_img[0, :, :])       # 첫번째 이미지 출력
 
 
+# 2. 데이터 가공
+#    1) 스케일링
+people_x = people_x / 255             # min-max scaling 효과
 
-# 2. 데이터 분리
+#    2) NN 학습을 위한 Y 변환
+people_y_dummy = pd.get_dummies(people_y).values
+
+
+# 3. 데이터 분리
 from sklearn.model_selection import train_test_split
-train_x, test_x, train_y, test_y = train_test_split(people_x, people_y, random_state=0)
+train_x, test_x, train_y, test_y, train_y_dm, test_y_dm = train_test_split(people_x, 
+                                                                           people_y, 
+                                                                           people_y_dummy, 
+                                                                           random_state=0)
 
 
-
-# 3. 모델링
+# 4. 모델링
 #    1)KNN으로 분류
 from sklearn.neighbors import KNeighborsClassifier as knn_c
 m_knn = knn_c()
 m_knn.fit(train_x, train_y)
-m_knn.score(train_x, train_y)         # 0.4503
-m_knn.score(test_x, test_y)           # 0.1825
+m_knn.score(train_x, train_y)         # 0.6128
+m_knn.score(test_x, test_y)           # 0.4
+
+from sklearn.metrics import confusion_matrix, classification_report
+
+yhat = m_knn.predict(test_x)
+print(classification_report(test_y, yhat, target_names=people['target_names']))
+
+
+# cofusion matrix 시각화
+mat = confusion_matrix(test_y, yhat)
+
+import matplotlib.pyplot as plt
+fig, ax = plt.subplots(figsize=(12, 12))
+cax = ax.matshow(mat, cmap='summer')
+ticks = np.arange(0,len(people['target_names']))
+ax.set_xticks(ticks)
+ax.set_yticks(ticks)
+ax.set_xticklabels(people['target_names'], rotation=45, ha='right')
+ax.set_yticklabels(people['target_names'], rotation=45, ha='right')
+ax.set_ylabel('true label')
+ax.set_xlabel('predicted label')
+ax.xaxis.set_ticks_position('bottom')
+
+for i in range(mat.shape[0]):
+    for j in range(mat.shape[1]):
+        ax.text(j, i, mat[i, j], ha='center', va='center')
 
 
 #    2) PCA + knn
-# 스케일링
-from sklearn.preprocessing import StandardScaler as standard
-m_sc = standard()
-people_x_sc = m_sc.fit_transform(people_x)
-
-
-# PCA
 from sklearn.decomposition import PCA
-m_pca = PCA(5)
-m_pca.fit(people_x_sc)
+m_pca = PCA(256)
+train_x_pca = m_pca.fit_transform(train_x)
+test_x_pca = m_pca.transform(test_x)
+
+train_x_pca.shape                     # (1170, 256) 256개의 설명변수로 변경
 
 
 # knn
-train_x, test_x, train_y, test_y = train_test_split(people_x_sc, people_y, random_state=0)
 m_knn = knn_c()
-m_knn.fit(train_x, train_y)
-m_knn.score(train_x, train_y)         # 0.5050
-m_knn.score(test_x, test_y)           # 0.2328
+m_knn.fit(train_x_pca, train_y)
+m_knn.score(train_x_pca, train_y)     # 0.6170
+m_knn.score(test_x_pca, test_y)       # 0.4076
 
 
 
@@ -90,6 +119,30 @@ ax[1].set_title(f'true : {p2}')
 
 
 
+
+# 다음 인공변수 수의 변화에 따른 예측률 변화 확인
+n_com = np.arange(100, 1100, 100)
+tr_score = []; te_score = []
+
+for i in n_com :
+    m_pca = PCA(i)
+    train_x_pca = m_pca.fit_transform(train_x)
+    test_x_pca = m_pca.transform(test_x)
+
+    m_knn = knn_c()
+    m_knn.fit(train_x_pca, train_y)
+    tr_score.append(m_knn.score(train_x_pca, train_y))
+    te_score.append(m_knn.score(test_x_pca, test_y))
+    
+plt.plot(n_com, tr_score, c = 'r', label = 'train')
+plt.plot(n_com, te_score, c = 'b', label = 'train')
+plt.ylim([0.3, 0.9])
+plt.xlabel('n_components')
+plt.ylabel('accuracy')
+plt.legend()
+
+
+
 # [ 참고 ] 이미지 변환(RGB값 추출)
 import imageio
 img1 = imageio.imread('joshua.jfif')
@@ -98,5 +151,27 @@ img1.shape
 import matplotlib.pyplot as plt
 plt.imshow(img1)
 
+
+
+
+# =============================================================================
+# Pipeline 구축
+# =============================================================================
+# pipeline : 여러 모델을 결합하여 하나의 모델로 표현
+# f(x)|g(x) > g(f(x))
+
+from sklearn.pipeline import make_pipeline
+from sklearn.neighbors import KNeighborsClassifier as knn
+from sklearn.decomposition import PCA
+
+pipe = make_pipeline(PCA(n_components=256), knn(n_neighbors=5))
+
+pipe.fit(train_x, train_y)       # input data가 이미 PCA가 된 dataset 아님 주의
+pipe.score(train_x, train_y)
+pipe.score(test_x, test_y)
+
+dir(pipe[0])                     # pipe 모델의 첫번째 모델이 갖는 메서드 목록
+pipe[0].components_              # 유도된 가중치 shape(인공변수 개수, 총 row 개수)
+pipe[0].components_.shape        # (256, 2914) (인공변수 개수, 총 row 개수)
 
 
