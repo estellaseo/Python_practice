@@ -462,3 +462,78 @@ model.fit(train_x, train_y_dm, epochs=3000, batch_size = 10,
 model.evaluate(test_x, test_y_dm)[1]
 
 
+
+
+
+# [ 연습 문제 ] ANN을 사용한 mnist 손글씨 분류
+# 1. 데이터 로딩
+from keras.datasets import mnist
+(train_x, train_y), (test_x, test_y) = mnist.load_data()
+
+train_x.shape              # (60000, 28, 28)
+test_x.shape               # (10000, 28, 28)
+
+
+
+# 2. 데이터의 변환
+# ANN에서는 2차원헝태 요구
+train_x = train_x.reshape((60000, 28*28))
+test_x = test_x.reshape((10000, 28*28))
+
+# X 데이터 변환 : 스케일링
+train_x = train_x / 255
+test_x  = test_x / 255
+
+# Y 데이터 변환 : 더미변수 변환
+train_y_dm = pd.get_dummies(train_y).values
+test_y_dm  = pd.get_dummies(test_y).values
+
+train_y_dm.shape           # (60000, 10) 분리된 Y의 수 = 10
+test_y_dm.shape            # (10000, 10) 분리된 Y의 수 = 10 (train/test 서로 일치)
+
+
+
+# 3. 모델 정의
+from keras.models import Sequential
+from keras.layers import Dense
+
+model = Sequential()
+model.add(Dense(392, input_dim = 28*28, activation='relu'))       
+model.add(Dense(196, activation='relu'))
+model.add(Dense(98, activation='relu'))
+model.add(Dense(10, activation='softmax'))
+
+
+
+# 4. Compile
+model.compile(optimizer = 'adam',
+              loss = 'categorical_crossentropy',
+              metrics = 'accuracy')
+
+
+
+# 5. 정지규칙과 모델 저장
+# 정지 규칙 생성
+from keras.callbacks import EarlyStopping
+m_stop = EarlyStopping(monitor='val_loss', patience=5)   
+
+# 모델 저장
+import os
+modelpath = './model/mnist_ann-{epoch:03d}-{val_loss:.4f}.hdf5'
+from keras.callbacks import ModelCheckpoint
+checkpointer = ModelCheckpoint(filepath=modelpath, monitor='val_loss', save_best_only=True)
+
+
+
+# 6. 훈련(fitting)
+model.fit(train_x, train_y_dm, epochs = 2000, batch_size = 10, validation_split = 0.2,
+          callbacks=[m_stop, checkpointer])
+
+
+
+# 7 . 평가
+model.evaluate(test_x, test_y_dm)[1]
+
+
+
+
