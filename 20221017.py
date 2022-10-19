@@ -488,9 +488,6 @@ test_x  = test_x / 255
 train_y_dm = pd.get_dummies(train_y).values
 test_y_dm  = pd.get_dummies(test_y).values
 
-train_y_dm.shape           # (60000, 10) 분리된 Y의 수 = 10
-test_y_dm.shape            # (10000, 10) 분리된 Y의 수 = 10 (train/test 서로 일치)
-
 
 
 # 3. 모델 정의
